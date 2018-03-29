@@ -75,7 +75,7 @@ public:
         x -= _pixel.offset + _gaussian.offset;
         double const d = 2*std::sqrt(2)*_gaussian.scaling;
         return 0.5*_gaussian.flux*_pixel.flux*(
-            std::erf((2*x + _pixel.scaling)/d) + std::erf((2*x - _pixel.scaling)/d)
+            std::erf((2*x + _pixel.scaling)/d) - std::erf((2*x - _pixel.scaling)/d)
         )/_pixel.scaling;
     }
 
