@@ -17,7 +17,6 @@ set_target_properties(continuous1d
 enable_testing()
 
 configure_file(tests/continuous1d.py test_continuous1d.py COPYONLY)
-
 add_test(NAME test_continuous1d
     COMMAND
         ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/test_continuous1d.py
