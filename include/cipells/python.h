@@ -32,6 +32,8 @@ namespace cipells {
 
 utils::Deferrer pyXYTuple(pybind11::module & module);
 
+utils::Deferrer pyInterval(pybind11::module & module);
+
 } // namespace cipells
 
 #endif // !CIPELLS_python_h_INCLUDED

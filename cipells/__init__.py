@@ -1,6 +1,18 @@
-from ._cipells import Real2, Index2
+from ._cipells import Real2, Index2, RealInterval, IndexInterval
+import numpy as np
 
-Real = float
-Index = int
+__all__ = ("Real", "Real2", "Index", "Index2",
+           "RealInterval", "IndexInterval", )
 
-__all__ = ("Real", "Real2", "Index", "Index2")
+Real = np.float64
+Index = np.int32
+
+Real2.Scalar = Real
+Index2.Scalar = Index
+
+RealInterval.Scalar = Real
+
+IndexInterval.Scalar = Index
+IndexInterval.__iter__ = lambda self: range(self.min, self.max + 1)
+IndexInterval.slice = property(lambda self: slice(self.min, self.max + 1, 1))
+IndexInterval.arange = lambda self, dtype=Index: np.arange(self.min, self.max, 1, dtype=dtype)

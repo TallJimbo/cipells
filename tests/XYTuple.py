@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
-from cipells import Real2, Index2
+
+from cipells import Real2, Index2, Real, Index
 
 
 class XYTupleTestMixin:
@@ -65,6 +66,9 @@ class XYTupleTestMixin:
 class Real2TestCase(unittest.TestCase, XYTupleTestMixin):
     TupleClass = Real2
 
+    def testTypes(self):
+        self.assertIs(self.TupleClass.Scalar, Real)
+
     def testNumPyScalars(self):
         a = np.arange(2, dtype=np.float32)
         p = Real2(*a)
@@ -79,6 +83,9 @@ class Real2TestCase(unittest.TestCase, XYTupleTestMixin):
 
 class Index2TestCase(unittest.TestCase, XYTupleTestMixin):
     TupleClass = Index2
+
+    def testTypes(self):
+        self.assertIs(self.TupleClass.Scalar, Index)
 
     def testNumPyScalars(self):
         a = np.arange(2, dtype=np.uint16)
