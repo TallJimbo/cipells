@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(cipells VERSION 0.0.1 LANGUAGES CXX)
 
-add_subdirectory(pybind11)
-add_subdirectory(fmt EXCLUDE_FROM_ALL)
+add_subdirectory(external/pybind11)
+add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
 
 add_library(cipells
     SHARED
