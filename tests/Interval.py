@@ -1,5 +1,6 @@
 import unittest
 import itertools
+import re
 import numpy as np
 
 from cipells import RealInterval, IndexInterval, Real, Index
@@ -122,6 +123,10 @@ class IntervalTestMixin:
             for rhs in self.points:
                 self.assertEqual(lhs.erodedBy(rhs), lhs.dilatedBy(-rhs))
 
+    def testRepr(self):
+        for i in itertools.chain(self.finite, self.singular, self.empty):
+            self.assertEqual(eval(repr(i)), i)
+
 
 class RealIntervalTestCase(unittest.TestCase, IntervalTestMixin):
     IntervalClass = RealInterval
@@ -136,6 +141,16 @@ class RealIntervalTestCase(unittest.TestCase, IntervalTestMixin):
         self.assertIs(self.IntervalClass.Scalar, Real)
         self.assertIs(self.IntervalClass.Scalar, Real)
 
+    def testStr(self):
+        for i in itertools.chain(self.finite, self.singular, self.empty):
+            if i.isEmpty():
+                self.assertEqual(str(i), "[]")
+            else:
+                m = re.match(r"\[(\-?[\d\.]+), (\-?[\d\.]+)\]", str(i))
+                self.assertTrue(m, msg=str(i))
+                self.assertEqual(m.group(1), "{:g}".format(i.min))
+                self.assertEqual(m.group(2), "{:g}".format(i.max))
+
 
 class IndexIntervalTestCase(unittest.TestCase, IntervalTestMixin):
     IntervalClass = IndexInterval
@@ -148,6 +163,16 @@ class IndexIntervalTestCase(unittest.TestCase, IntervalTestMixin):
 
     def testTypes(self):
         self.assertIs(self.IntervalClass.Scalar, Index)
+
+    def testStr(self):
+        for i in itertools.chain(self.finite, self.singular, self.empty):
+            if i.isEmpty():
+                self.assertEqual(str(i), "[]")
+            else:
+                m = re.match(r"\[(\-?\d+), (\-?\d+)\]", str(i))
+                self.assertTrue(m, msg=str(i))
+                self.assertEqual(m.group(1), "{:d}".format(i.min))
+                self.assertEqual(m.group(2), "{:d}".format(i.max))
 
 
 if __name__ == "__main__":

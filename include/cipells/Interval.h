@@ -2,6 +2,7 @@
 #define CIPELLS_Interval_h_INCLUDED
 
 #include <algorithm>
+#include <string>
 #include "cipells/fwd/Interval.h"
 
 namespace cipells {
@@ -59,6 +60,8 @@ public:
     Derived & erodeBy(Scalar rhs) { return dilateBy(-rhs); }
     Derived erodedBy(Scalar rhs) const { return _copy().erodeBy(rhs); }
 
+    std::string str() const;
+
 private:
 
     Derived & _self() { return static_cast<Derived &>(*this); }
@@ -71,7 +74,6 @@ private:
 extern template class BaseInterval<Index, IndexInterval>;
 extern template class BaseInterval<Real, RealInterval>;
 #endif
-
 
 } // namespace detail
 
@@ -87,6 +89,8 @@ public:
     explicit IndexInterval(RealInterval const & other);
 
     Index size() const { return this->isEmpty() ? 0 : 1 + this->max() - this->min(); }
+
+    std::string repr() const;
 
 };
 
@@ -104,6 +108,8 @@ public:
     RealInterval(IndexInterval const & other);
 
     Real size() const { return this->isEmpty() ? 0 : this->max() - this->min(); }
+
+    std::string repr() const;
 
 };
 

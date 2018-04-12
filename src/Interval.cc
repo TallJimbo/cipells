@@ -1,4 +1,5 @@
 #define CIPELLS_Interval_cc
+#include "fmt/format.h"
 #include "cipells/Interval.h"
 
 namespace cipells {
@@ -120,6 +121,15 @@ Derived & BaseInterval<T, Derived>::dilateBy(Scalar rhs) {
     return _self();
 }
 
+template <typename T, typename Derived>
+std::string BaseInterval<T, Derived>::str() const {
+    if (isEmpty()) {
+        return "[]";
+    }
+    return fmt::format("[{}, {}]", min(), max());
+}
+
+
 template class BaseInterval<Real, RealInterval>;
 template class BaseInterval<Index, IndexInterval>;
 
@@ -130,6 +140,13 @@ IndexInterval::IndexInterval(RealInterval const & other) :
     Base(convertReal(other))
 {}
 
+std::string IndexInterval::repr() const {
+    if (isEmpty()) {
+        return "IndexInterval()";
+    }
+    return fmt::format("IndexInterval(min={}, max={})", min(), max());
+}
+
 RealInterval RealInterval::makeUniverse() {
     return RealInterval(-std::numeric_limits<Real>::infinity(),
                         std::numeric_limits<Real>::infinity());
@@ -138,5 +155,12 @@ RealInterval RealInterval::makeUniverse() {
 RealInterval::RealInterval(IndexInterval const & other) :
     Base(convertIndex(other))
 {}
+
+std::string RealInterval::repr() const {
+    if (isEmpty()) {
+        return "RealInterval()";
+    }
+    return fmt::format("RealInterval(min={}, max={})", min(), max());
+}
 
 } // namespace cipells

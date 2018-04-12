@@ -36,6 +36,8 @@ void wrapInterval(py::class_<Derived, Args...> & cls) {
     cls.def("expandedTo", py::overload_cast<T>(&Derived::expandedTo, py::const_));
     cls.def("dilatedBy", &Derived::dilatedBy);
     cls.def("erodedBy", &Derived::erodedBy);
+    cls.def("__str__", &Derived::str);
+    cls.def("__repr__", &Derived::repr);
     cls.def_property_readonly("size", &Derived::size);
 }
 

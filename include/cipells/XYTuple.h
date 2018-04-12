@@ -2,7 +2,7 @@
 #define CIPELLS_XYTuple_h_INCLUDED
 
 #include <array>
-#include <cmath>
+#include <string>
 
 #include "cipells/fwd/XYTuple.h"
 
@@ -15,6 +15,11 @@ public:
     using Scalar = T;
 
     XYTuple(T x, T y) : _array{x, y} {}
+
+    template <typename U>
+    explicit XYTuple(XYTuple<U> const & other) :
+        _array{static_cast<T>(other.x()), static_cast<T>(other.y())}
+    {}
 
     Scalar & x() { return _array[0]; }
     Scalar const & x() const { return _array[0]; }
@@ -47,14 +52,22 @@ public:
 
     Scalar dot(XYTuple const & other) const { return x()*other.x() + y()*other.y(); }
 
+    std::string str() const;
+    std::string repr() const;
+
 private:
     std::array<T,2> _array;
 };
 
-
 inline Index2 operator%(Index2 const & lhs, Index rhs) {
     return Index2(lhs.x() % rhs, lhs.y() % rhs);
 }
+
+#ifndef CIPELLS_XYTuple_cc
+extern template class XYTuple<Index>;
+extern template class XYTuple<Real>;
+#endif
+
 
 
 } // namespace cipells

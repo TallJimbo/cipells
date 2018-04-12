@@ -1,4 +1,5 @@
 import unittest
+import re
 import numpy as np
 
 from cipells import Real2, Index2, Real, Index
@@ -80,6 +81,11 @@ class Real2TestCase(unittest.TestCase, XYTupleTestMixin):
         self.assertEqual(p / 3.0, Real2(p.x/3.0, p.y/3.0))
         self.assertEqual(p / -3.0, Real2(p.x/-3.0, p.y/-3.0))
 
+    def testStr(self):
+        p = Real2(8.0, -4.0)
+        self.assertEqual(eval(repr(p)), p)
+        self.assertTrue(re.match(r"\(x=8(\,0*)?, y=-4(\,0*)?\)", str(p)))
+
 
 class Index2TestCase(unittest.TestCase, XYTupleTestMixin):
     TupleClass = Index2
@@ -100,6 +106,10 @@ class Index2TestCase(unittest.TestCase, XYTupleTestMixin):
         self.assertEqual(p % 3, Index2(p.x%3, p.y%3))
         self.assertEqual(p % -3, Index2(p.x%-3, p.y%-3))
 
+    def testStr(self):
+        p = Index2(8, -4)
+        self.assertEqual(eval(repr(p)), p)
+        self.assertEqual(str(p), "(x=8, y=-4)")
 
 
 if __name__ == "__main__":

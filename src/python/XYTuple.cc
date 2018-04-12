@@ -67,6 +67,8 @@ void wrapXYTuple(py::class_<XYTuple<T>, Args...> & cls) {
     cls.def("__eq__", &XYTuple<T>::operator==, py::is_operator());
     cls.def("__ne__", &XYTuple<T>::operator!=, py::is_operator());
     cls.def("dot", &XYTuple<T>::dot);
+    cls.def("__str__", &XYTuple<T>::str);
+    cls.def("__repr__", &XYTuple<T>::repr);
 }
 
 template <typename T>

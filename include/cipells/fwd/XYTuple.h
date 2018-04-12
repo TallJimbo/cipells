@@ -1,12 +1,9 @@
 #ifndef CIPELLS_FWD_XYTuple_h_INCLUDED
 #define CIPELLS_FWD_XYTuple_h_INCLUDED
 
-#include <cstdint>
+#include "cipells/common.h"
 
 namespace cipells {
-
-using Index = std::int32_t;
-using Real = double;
 
 template <typename T>
 class XYTuple;

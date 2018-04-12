@@ -6,6 +6,7 @@ add_subdirectory(fmt EXCLUDE_FROM_ALL)
 
 add_library(cipells
     SHARED
+    src/XYTuple.cc
     src/Interval.cc
 )
 target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
