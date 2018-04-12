@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 3.5)
 project(cipells VERSION 0.0.1 LANGUAGES CXX)
 
 add_subdirectory(pybind11)
-
+add_subdirectory(fmt EXCLUDE_FROM_ALL)
 
 add_library(cipells
     SHARED
     src/Interval.cc
 )
+target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
 target_include_directories(cipells
     PUBLIC
         $<INSTALL_INTERFACE:include>
