@@ -13,6 +13,7 @@ Index2.Scalar = Index
 RealInterval.Scalar = Real
 
 IndexInterval.Scalar = Index
-IndexInterval.__iter__ = lambda self: range(self.min, self.max + 1)
+IndexInterval.__iter__ = lambda self: iter(range(self.min, self.max + 1))
+IndexInterval.__len__ = lambda self: self.size
 IndexInterval.slice = property(lambda self: slice(self.min, self.max + 1, 1))
-IndexInterval.arange = lambda self, dtype=Index: np.arange(self.min, self.max, 1, dtype=dtype)
+IndexInterval.arange = lambda self, dtype=Index: np.arange(self.min, self.max + 1, 1, dtype=dtype)

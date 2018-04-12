@@ -174,6 +174,13 @@ class IndexIntervalTestCase(unittest.TestCase, IntervalTestMixin):
                 self.assertEqual(m.group(1), "{:d}".format(i.min))
                 self.assertEqual(m.group(2), "{:d}".format(i.max))
 
+    def testExtensions(self):
+        s = list(range(10))
+        i = IndexInterval(min=3, max=8)
+        self.assertEqual(s[i.slice], list(i))
+        self.assertEqual(len(i), i.size)
+        np.testing.assert_array_equal(np.array(list(i), dtype=i.Scalar), i.arange())
+        np.testing.assert_array_equal(np.array(list(i), dtype=np.int64), i.arange(dtype=np.int64))
 
 if __name__ == "__main__":
     unittest.main()
