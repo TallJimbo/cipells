@@ -2,6 +2,7 @@
 #define CIPELLS_python_h_INCLUDED
 
 #include "pybind11/pybind11.h"
+
 #include "cipells/fwd/XYTuple.h"
 #include "cipells/utils/Deferrer.h"
 

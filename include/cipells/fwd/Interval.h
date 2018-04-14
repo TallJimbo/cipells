@@ -1,7 +1,7 @@
 #ifndef CIPELLS_FWD_Interval_h_INCLUDED
 #define CIPELLS_FWD_Interval_h_INCLUDED
 
-#include "cipells/fwd/XYTuple.h"
+#include "cipells/common.h"
 
 namespace cipells {
 

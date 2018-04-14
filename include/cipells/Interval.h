@@ -2,7 +2,7 @@
 #define CIPELLS_Interval_h_INCLUDED
 
 #include <algorithm>
-#include <string>
+
 #include "cipells/fwd/Interval.h"
 #include "cipells/formatting.h"
 

@@ -2,6 +2,7 @@
 #define CIPELLS_IMPL_formatting_h_INCLUDED
 
 #include "fmt/format.h"
+
 #include "cipells/formatting.h"
 #include "cipells/common.h"
 

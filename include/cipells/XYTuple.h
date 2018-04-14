@@ -2,7 +2,6 @@
 #define CIPELLS_XYTuple_h_INCLUDED
 
 #include <array>
-#include <string>
 
 #include "cipells/fwd/XYTuple.h"
 #include "cipells/formatting.h"
