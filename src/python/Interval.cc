@@ -46,9 +46,10 @@ void wrapInterval(py::class_<Derived, Args...> & cls) {
             }
         )
     );
-    cls.def_property_readonly("min", [](Derived const & self) -> T { return self.min(); });
-    cls.def_property_readonly("max", [](Derived const & self) -> T { return self.max(); });
-    cls.def_property_readonly("center", [](Derived const & self) -> T { return self.center(); });
+    cls.def_property_readonly("min", &Derived::min);
+    cls.def_property_readonly("max", &Derived::max);
+    cls.def_property_readonly("center", &Derived::center);
+    cls.def_property_readonly("size", &Derived::size);
     cls.def("isEmpty", &Derived::isEmpty);
     cls.def("contains", py::overload_cast<Derived const &>(&Derived::contains, py::const_));
     cls.def("contains", py::overload_cast<T>(&Derived::contains, py::const_));
@@ -62,7 +63,6 @@ void wrapInterval(py::class_<Derived, Args...> & cls) {
     cls.def("erodedBy", &Derived::erodedBy);
     cls.def("__str__", &Derived::str);
     cls.def("__repr__", &Derived::repr);
-    cls.def_property_readonly("size", &Derived::size);
 }
 
 } // anonymous
