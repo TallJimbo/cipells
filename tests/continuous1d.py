@@ -21,7 +21,7 @@ class TestCase(unittest.TestCase):
         np.testing.assert_allclose(t2(y2), x2, rtol=1E-13)
         identity1 = t2.then(t1)
         np.testing.assert_allclose(identity1.scaling, 1.0)
-        np.testing.assert_allclose(identity1.offset, 0.0)
+        np.testing.assert_allclose(identity1.offset, 0.0, atol=1E-13)
         identity2 = t1.then(t2)
         np.testing.assert_allclose(identity2.scaling, 1.0)
         np.testing.assert_allclose(identity2.offset, 0.0, atol=1E-13)
