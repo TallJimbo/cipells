@@ -61,7 +61,7 @@ public:
     Derived & erodeBy(Scalar rhs) { return dilateBy(-rhs); }
     Derived erodedBy(Scalar rhs) const { return _copy().erodeBy(rhs); }
 
-    void format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const;
+    void format(Formatter & formatter, char const * & tmpl) const;
 
 private:
 

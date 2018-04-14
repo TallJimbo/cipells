@@ -5,7 +5,7 @@
 namespace cipells {
 
 template <typename T>
-void XYTuple<T>::format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const {
+void XYTuple<T>::format(detail::Formatter & formatter, char const * & tmpl) const {
     if (detail::isTemplateRepr(tmpl)) {
         formatter.writer().write(
             "{0:s}2(x={1}, y={2})",

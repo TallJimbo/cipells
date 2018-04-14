@@ -53,7 +53,7 @@ public:
 
     Scalar dot(XYTuple const & other) const { return x()*other.x() + y()*other.y(); }
 
-    void format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const;
+    void format(detail::Formatter & formatter, char const * & tmpl) const;
 
 private:
     std::array<T,2> _array;

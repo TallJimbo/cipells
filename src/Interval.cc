@@ -122,7 +122,7 @@ Derived & BaseInterval<T, Derived>::dilateBy(Scalar rhs) {
 }
 
 template <typename T, typename Derived>
-void BaseInterval<T, Derived>::format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const {
+void BaseInterval<T, Derived>::format(Formatter & formatter, char const * & tmpl) const {
     if (detail::isTemplateRepr(tmpl)) {
         if (isEmpty()) {
             formatter.writer().write("{0:s}Interval()", detail::ScalarFormatTraits<T>::NAME);

@@ -1,6 +1,7 @@
 #ifndef CIPELLS_IMPL_formatting_h_INCLUDED
 #define CIPELLS_IMPL_formatting_h_INCLUDED
 
+#include "fmt/format.h"
 #include "cipells/formatting.h"
 #include "cipells/common.h"
 
@@ -34,7 +35,7 @@ public:
     ScalarFormatProxy(T v) : _value(v) {}
 
     friend void format_arg(
-        fmt::BasicFormatter<char> & formatter,
+        Formatter & formatter,
         char const * &,
         ScalarFormatProxy<T> const & self
     ) {
