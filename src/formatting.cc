@@ -1,5 +1,5 @@
-#define CIPELLS_format_cc_SRC
-#include "cipells/format.h"
+#define CIPELLS_formatting_cc_SRC
+#include "impl/formatting.h"
 
 namespace cipells { namespace detail {
 

@@ -1,6 +1,6 @@
-#define CIPELLS_Interval_cc
-#include "fmt/format.h"
+#define CIPELLS_Interval_cc_SRC
 #include "cipells/Interval.h"
+#include "impl/formatting.h"
 
 namespace cipells {
 
@@ -150,6 +150,8 @@ void BaseInterval<T, Derived>::format(fmt::BasicFormatter<char> & formatter, cha
 
 template class BaseInterval<Real, RealInterval>;
 template class BaseInterval<Index, IndexInterval>;
+template class Formattable<RealInterval>;
+template class Formattable<IndexInterval>;
 
 } // namespace detail
 

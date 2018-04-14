@@ -1,5 +1,6 @@
-#define CIPELLS_XYTuple_cc
+#define CIPELLS_XYTuple_cc_SRC
 #include "cipells/XYTuple.h"
+#include "impl/formatting.h"
 
 namespace cipells {
 
@@ -23,5 +24,12 @@ void XYTuple<T>::format(fmt::BasicFormatter<char> & formatter, char const * & tm
 
 template class XYTuple<Index>;
 template class XYTuple<Real>;
+
+namespace detail {
+
+template class Formattable<XYTuple<Index>>;
+template class Formattable<XYTuple<Real>>;
+
+} // namespace detail
 
 } // namespace cipells

@@ -6,7 +6,7 @@ add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
 
 add_library(cipells
     SHARED
-    src/format.cc
+    src/formatting.cc
     src/XYTuple.cc
     src/Interval.cc
 )

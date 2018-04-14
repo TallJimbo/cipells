@@ -1,7 +1,7 @@
-#ifndef CIPELLS_format_h_INCLUDED
-#define CIPELLS_format_h_INCLUDED
+#ifndef CIPELLS_IMPL_formatting_h_INCLUDED
+#define CIPELLS_IMPL_formatting_h_INCLUDED
 
-#include "fmt/format.h"
+#include "cipells/formatting.h"
 #include "cipells/common.h"
 
 namespace cipells { namespace detail {
@@ -48,32 +48,22 @@ private:
 template <typename T>
 inline ScalarFormatProxy<T> formatScalar(T v) { return ScalarFormatProxy<T>(v); }
 
+
 template <typename Derived>
-class Formattable {
-public:
+std::string Formattable<Derived>::str() const { return fmt::format("{:s}", *this); }
 
-    std::string str() const { return fmt::format("{:s}", *this); }
-    std::string repr() const { return fmt::format("{:r}", *this); }
+template <typename Derived>
+std::string Formattable<Derived>::repr() const { return fmt::format("{:r}", *this); }
 
-    void format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const = delete;
-
-    friend void format_arg(
-        fmt::BasicFormatter<char> & formatter,
-        char const * & tmpl,
-        Formattable<Derived> const & self
-    ) {
-        static_cast<Derived const &>(self).format(formatter, tmpl);
-    }
-
-};
 
 bool isTemplateRepr(char const * & tmpl);
 
-#ifndef CIPELLS_format_cc_SRC
+
+#ifndef CIPELLS_formatting_cc_SRC
 extern template class ScalarFormatProxy<Index>;
 extern template class ScalarFormatProxy<Real>;
 #endif
 
 }} // cipells::detail
 
-#endif // !CIPELLS_format_h_INCLUDED
+#endif // !CIPELLS_IMPL_formatting_h_INCLUDED

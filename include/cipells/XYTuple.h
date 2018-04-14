@@ -5,7 +5,7 @@
 #include <string>
 
 #include "cipells/fwd/XYTuple.h"
-#include "cipells/format.h"
+#include "cipells/formatting.h"
 
 namespace cipells {
 
@@ -63,9 +63,13 @@ inline Index2 operator%(Index2 const & lhs, Index rhs) {
     return Index2(lhs.x() % rhs, lhs.y() % rhs);
 }
 
-#ifndef CIPELLS_XYTuple_cc
-extern template class XYTuple<Index>;
-extern template class XYTuple<Real>;
+#ifndef CIPELLS_XYTuple_cc_SRC
+    extern template class XYTuple<Index>;
+    extern template class XYTuple<Real>;
+    namespace detail {
+        extern template class Formattable<XYTuple<Index>>;
+        extern template class Formattable<XYTuple<Real>>;
+    } // namespace detail
 #endif
 
 

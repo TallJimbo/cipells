@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <string>
 #include "cipells/fwd/Interval.h"
-#include "cipells/format.h"
+#include "cipells/formatting.h"
 
 namespace cipells {
 
@@ -71,11 +71,6 @@ private:
     std::pair<Scalar, Scalar> _values;
 };
 
-#ifndef CIPELLS_Interval_cc
-extern template class BaseInterval<Index, IndexInterval>;
-extern template class BaseInterval<Real, RealInterval>;
-#endif
-
 } // namespace detail
 
 
@@ -110,6 +105,15 @@ public:
 
 };
 
+
+#ifndef CIPELLS_Interval_cc_SRC
+    namespace detail {
+        extern template class BaseInterval<Index, IndexInterval>;
+        extern template class BaseInterval<Real, RealInterval>;
+        extern template class Formattable<IndexInterval>;
+        extern template class Formattable<RealInterval>;
+    } // namespace detail
+#endif
 
 } // namespace cipells
 
