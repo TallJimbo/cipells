@@ -20,8 +20,11 @@ public:
 
     template <typename Iterator>
     static Derived makeHull(Iterator first, Iterator last) {
-        auto p = std::minmax_element(first, last);
-        return Derived(*p.first, *p.second);
+        Derived result;
+        for (auto iter = first; iter != last; ++iter) {
+            result.expandTo(*iter);
+        }
+        return result;
     }
 
     template <typename Container>

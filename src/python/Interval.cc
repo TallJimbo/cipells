@@ -1,3 +1,5 @@
+#include "pybind11/stl.h"
+
 #include "cipells/python.h"
 #include "cipells/Interval.h"
 
@@ -13,12 +15,8 @@ void wrapInterval(py::class_<Derived, Args...> & cls) {
     cls.def_static("makeEmpty", &Derived::makeEmpty);
     cls.def_static(
         "makeHull",
-        [](py::iterable const & iterable) {
-            Derived result;
-            for (auto x : iterable) {
-                result.expandTo(py::cast<T>(x));
-            }
-            return result;
+        [](std::vector<T> const & container) {
+            return Derived::makeHull(container);
         }
     );
     cls.def(py::init<>());

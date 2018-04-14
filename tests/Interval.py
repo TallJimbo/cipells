@@ -42,6 +42,17 @@ class IntervalTestMixin:
         self.assertAllFalse(s.isEmpty() for s in self.singular)
         self.assertAllTrue(s.isEmpty() for s in self.empty)
 
+    def testMakeHull(self):
+        for i1, p1 in enumerate(self.points):
+            for i2, p2 in enumerate(self.points):
+                seq = list(self.points[i1:i2+1])
+                i = self.IntervalClass(min=p1, max=p2)
+                self.assertEqual(i, self.IntervalClass.makeHull(seq))
+                np.random.shuffle(seq)
+                self.assertEqual(i, self.IntervalClass.makeHull(seq))
+                seq.reverse()
+                self.assertEqual(i, self.IntervalClass.makeHull(seq))
+
     def testContains(self):
         for lhs in itertools.chain(self.finite, self.singular):
             for rhs in itertools.chain(self.finite, self.singular):
