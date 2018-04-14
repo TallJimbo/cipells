@@ -122,11 +122,29 @@ Derived & BaseInterval<T, Derived>::dilateBy(Scalar rhs) {
 }
 
 template <typename T, typename Derived>
-std::string BaseInterval<T, Derived>::str() const {
-    if (isEmpty()) {
-        return "[]";
+void BaseInterval<T, Derived>::format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const {
+    if (detail::isTemplateRepr(tmpl)) {
+        if (isEmpty()) {
+            formatter.writer().write("{0:s}Interval()", detail::ScalarFormatTraits<T>::NAME);
+        } else {
+            formatter.writer().write(
+                "{0:s}Interval(min={1}, max={2})",
+                detail::ScalarFormatTraits<T>::NAME,
+                detail::formatScalar(min()),
+                detail::formatScalar(max())
+            );
+        }
+    } else {
+        if (isEmpty()) {
+            formatter.writer().write("[]");
+        } else {
+            formatter.writer().write(
+                "[{0}, {1}]",
+                detail::formatScalar(min()),
+                detail::formatScalar(max())
+            );
+        }
     }
-    return fmt::format("[{}, {}]", min(), max());
 }
 
 
@@ -140,13 +158,6 @@ IndexInterval::IndexInterval(RealInterval const & other) :
     Base(convertReal(other))
 {}
 
-std::string IndexInterval::repr() const {
-    if (isEmpty()) {
-        return "IndexInterval()";
-    }
-    return fmt::format("IndexInterval(min={}, max={})", min(), max());
-}
-
 RealInterval RealInterval::makeUniverse() {
     return RealInterval(-std::numeric_limits<Real>::infinity(),
                         std::numeric_limits<Real>::infinity());
@@ -155,12 +166,5 @@ RealInterval RealInterval::makeUniverse() {
 RealInterval::RealInterval(IndexInterval const & other) :
     Base(convertIndex(other))
 {}
-
-std::string RealInterval::repr() const {
-    if (isEmpty()) {
-        return "RealInterval()";
-    }
-    return fmt::format("RealInterval(min={}, max={})", min(), max());
-}
 
 } // namespace cipells

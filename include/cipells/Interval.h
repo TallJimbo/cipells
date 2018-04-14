@@ -4,13 +4,14 @@
 #include <algorithm>
 #include <string>
 #include "cipells/fwd/Interval.h"
+#include "cipells/format.h"
 
 namespace cipells {
 
 namespace detail {
 
 template <typename T, typename Derived>
-class BaseInterval {
+class BaseInterval : public Formattable<Derived> {
 public:
 
     using Scalar = T;
@@ -60,7 +61,7 @@ public:
     Derived & erodeBy(Scalar rhs) { return dilateBy(-rhs); }
     Derived erodedBy(Scalar rhs) const { return _copy().erodeBy(rhs); }
 
-    std::string str() const;
+    void format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const;
 
 private:
 
@@ -90,8 +91,6 @@ public:
 
     Index size() const { return this->isEmpty() ? 0 : 1 + this->max() - this->min(); }
 
-    std::string repr() const;
-
 };
 
 
@@ -108,8 +107,6 @@ public:
     RealInterval(IndexInterval const & other);
 
     Real size() const { return this->isEmpty() ? 0 : this->max() - this->min(); }
-
-    std::string repr() const;
 
 };
 

@@ -1,29 +1,24 @@
 #define CIPELLS_XYTuple_cc
-#include "fmt/format.h"
 #include "cipells/XYTuple.h"
 
 namespace cipells {
 
-namespace {
-
-std::string getScalarName(Index *) {
-    return "Index";
-}
-
-std::string getScalarName(Real *) {
-    return "Real";
-}
-
-} // anonymous
-
 template <typename T>
-std::string XYTuple<T>::str() const {
-    return fmt::format("(x={}, y={})", x(), y());
-}
-
-template <typename T>
-std::string XYTuple<T>::repr() const {
-    return fmt::format("{}2(x={}, y={})", getScalarName((T*)nullptr), x(), y());
+void XYTuple<T>::format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const {
+    if (detail::isTemplateRepr(tmpl)) {
+        formatter.writer().write(
+            "{0:s}2(x={1}, y={2})",
+            detail::ScalarFormatTraits<T>::NAME,
+            detail::formatScalar(x()),
+            detail::formatScalar(y())
+        );
+    } else {
+        formatter.writer().write(
+            "(x={0}, y={1})",
+            detail::formatScalar(x()),
+            detail::formatScalar(y())
+        );
+    }
 }
 
 template class XYTuple<Index>;

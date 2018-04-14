@@ -5,11 +5,12 @@
 #include <string>
 
 #include "cipells/fwd/XYTuple.h"
+#include "cipells/format.h"
 
 namespace cipells {
 
 template <typename T>
-class XYTuple {
+class XYTuple : public detail::Formattable<XYTuple<T>> {
 public:
 
     using Scalar = T;
@@ -52,8 +53,7 @@ public:
 
     Scalar dot(XYTuple const & other) const { return x()*other.x() + y()*other.y(); }
 
-    std::string str() const;
-    std::string repr() const;
+    void format(fmt::BasicFormatter<char> & formatter, char const * & tmpl) const;
 
 private:
     std::array<T,2> _array;

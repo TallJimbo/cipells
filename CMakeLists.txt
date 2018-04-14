@@ -6,6 +6,7 @@ add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
 
 add_library(cipells
     SHARED
+    src/format.cc
     src/XYTuple.cc
     src/Interval.cc
 )
@@ -53,8 +54,8 @@ set_target_properties(_cipells
 target_link_libraries(_cipells
     PRIVATE
         cipells
+        fmt::fmt-header-only
 )
-
 
 enable_testing()
 
