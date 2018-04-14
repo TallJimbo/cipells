@@ -32,12 +32,19 @@ public:
         return makeHull(std::begin(container), std::end(container));
     }
 
+    static Derived fromCenterSize(Scalar center, Scalar size) {
+        Scalar min = center - size/2;
+        return Derived::fromMinSize(min, size);
+    }
+
     BaseInterval();
 
     explicit BaseInterval(std::pair<Scalar, Scalar> const & values);
 
     Scalar min() const { return _values.first; }
     Scalar max() const { return _values.second; }
+
+    Scalar center() const { return min() + static_cast<Derived const &>(*this).size()/2; }
 
     bool isEmpty() const { return !(min() <= max()); }
 
@@ -81,14 +88,18 @@ class IndexInterval : public detail::BaseInterval<Index, IndexInterval> {
     using Base = detail::BaseInterval<Index, IndexInterval>;
 public:
 
-    IndexInterval() : Base() {}
+    static IndexInterval fromMinMax(Index min, Index max);
+    static IndexInterval fromMinSize(Index min, Index size);
+    static IndexInterval fromMaxSize(Index max, Index size);
 
-    IndexInterval(Index min, Index max) : Base(std::make_pair(min, max)) {}
+    IndexInterval() : Base() {}
 
     explicit IndexInterval(RealInterval const & other);
 
     Index size() const { return this->isEmpty() ? 0 : 1 + this->max() - this->min(); }
 
+private:
+    IndexInterval(Index min, Index max) : Base(std::make_pair(min, max)) {}
 };
 
 
@@ -96,16 +107,21 @@ class RealInterval : public detail::BaseInterval<Real, RealInterval> {
     using Base = detail::BaseInterval<Real, RealInterval>;
 public:
 
+    static RealInterval fromMinMax(Real min, Real max);
+    static RealInterval fromMinSize(Real min, Real size);
+    static RealInterval fromMaxSize(Real max, Real size);
+
     static RealInterval makeUniverse();
 
     RealInterval() : Base() {}
 
-    RealInterval(Real min, Real max) : Base(std::make_pair(min, max)) {}
 
     RealInterval(IndexInterval const & other);
 
     Real size() const { return this->isEmpty() ? 0 : this->max() - this->min(); }
 
+private:
+    RealInterval(Real min, Real max) : Base(std::make_pair(min, max)) {}
 };
 
 

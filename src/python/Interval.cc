@@ -20,9 +20,35 @@ void wrapInterval(py::class_<Derived, Args...> & cls) {
         }
     );
     cls.def(py::init<>());
-    cls.def(py::init<T, T>(), "min"_a, "max"_a);
+    cls.def(
+        py::init(
+            [](py::kwargs kw) -> Derived {
+                if (kw.size() != 2) {
+                    PyErr_SetString(PyExc_TypeError, "Constructor requires exactly 2 arguments.");
+                    throw py::error_already_set();
+                }
+                if (kw.contains("min")) {
+                    if (kw.contains("max")) {
+                        return Derived::fromMinMax(py::cast<T>(kw["min"]), py::cast<T>(kw["max"]));
+                    }
+                    if (kw.contains("size")) {
+                        return Derived::fromMinSize(py::cast<T>(kw["min"]), py::cast<T>(kw["size"]));
+                    }
+                }
+                if (kw.contains("max") && kw.contains("size")) {
+                    return Derived::fromMaxSize(py::cast<T>(kw["max"]), py::cast<T>(kw["size"]));
+                }
+                if (kw.contains("center") && kw.contains("size")) {
+                    return Derived::fromCenterSize(py::cast<T>(kw["center"]), py::cast<T>(kw["size"]));
+                }
+                PyErr_SetString(PyExc_TypeError, "Incompatible constructor arguments.");
+                throw py::error_already_set();
+            }
+        )
+    );
     cls.def_property_readonly("min", [](Derived const & self) -> T { return self.min(); });
     cls.def_property_readonly("max", [](Derived const & self) -> T { return self.max(); });
+    cls.def_property_readonly("center", [](Derived const & self) -> T { return self.center(); });
     cls.def("isEmpty", &Derived::isEmpty);
     cls.def("contains", py::overload_cast<Derived const &>(&Derived::contains, py::const_));
     cls.def("contains", py::overload_cast<T>(&Derived::contains, py::const_));

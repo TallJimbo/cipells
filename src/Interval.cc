@@ -83,7 +83,7 @@ Derived & BaseInterval<T, Derived>::clipTo(Derived const & rhs) {
         if (rhs.isEmpty()) {
             _values = getStandardEmpty((T*)nullptr);
         } else {
-            *this = Derived(std::max(min(), rhs.min()), std::min(max(), rhs.max()));
+            *this = Derived::fromMinMax(std::max(min(), rhs.min()), std::min(max(), rhs.max()));
         }
     }
     return _self();
@@ -95,7 +95,7 @@ Derived & BaseInterval<T, Derived>::expandTo(Derived const & rhs) {
         if (isEmpty()) {
             *this = rhs;
         } else {
-            *this = Derived(std::min(min(), rhs.min()), std::max(max(), rhs.max()));
+            *this = Derived::fromMinMax(std::min(min(), rhs.min()), std::max(max(), rhs.max()));
         }
     }
     return _self();
@@ -105,9 +105,9 @@ template <typename T, typename Derived>
 Derived & BaseInterval<T, Derived>::expandTo(Scalar rhs) {
     if (rhs == rhs) {
         if (isEmpty()) {
-            *this = Derived(rhs, rhs);
+            *this = Derived::fromMinMax(rhs, rhs);
         } else {
-            *this = Derived(std::min(min(), rhs), std::max(max(), rhs));
+            *this = Derived::fromMinMax(std::min(min(), rhs), std::max(max(), rhs));
         }
     }
     return _self();
@@ -116,7 +116,7 @@ Derived & BaseInterval<T, Derived>::expandTo(Scalar rhs) {
 template <typename T, typename Derived>
 Derived & BaseInterval<T, Derived>::dilateBy(Scalar rhs) {
     if (!isEmpty() && rhs == rhs) {
-        *this = Derived(min() - rhs, max() + rhs);
+        *this = Derived::fromMinMax(min() - rhs, max() + rhs);
     }
     return _self();
 }
@@ -155,10 +155,34 @@ template class Formattable<IndexInterval>;
 
 } // namespace detail
 
+IndexInterval IndexInterval::fromMinMax(Index min_, Index max_) {
+    return IndexInterval(min_, max_);
+}
+
+IndexInterval IndexInterval::fromMinSize(Index min_, Index size_) {
+    return IndexInterval(min_, min_ + size_ - 1);
+}
+
+IndexInterval IndexInterval::fromMaxSize(Index max_, Index size_) {
+    return IndexInterval(max_ - size_ + 1, max_);
+}
 
 IndexInterval::IndexInterval(RealInterval const & other) :
     Base(convertReal(other))
 {}
+
+
+RealInterval RealInterval::fromMinMax(Real min_, Real max_) {
+    return RealInterval(min_, max_);
+}
+
+RealInterval RealInterval::fromMinSize(Real min_, Real size_) {
+    return RealInterval(min_, min_ + size_);
+}
+
+RealInterval RealInterval::fromMaxSize(Real max_, Real size_) {
+    return RealInterval(max_ - size_, max_);
+}
 
 RealInterval RealInterval::makeUniverse() {
     return RealInterval(-std::numeric_limits<Real>::infinity(),

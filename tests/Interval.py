@@ -42,6 +42,13 @@ class IntervalTestMixin:
         self.assertAllFalse(s.isEmpty() for s in self.singular)
         self.assertAllTrue(s.isEmpty() for s in self.empty)
 
+    def testConstructor(self):
+        for i in itertools.chain(self.finite, self.singular):
+            self.assertEqual(i, self.IntervalClass(min=i.min, max=i.max))
+            self.assertEqual(i, self.IntervalClass(min=i.min, size=i.size))
+            self.assertEqual(i, self.IntervalClass(max=i.max, size=i.size))
+            self.assertEqual(i, self.IntervalClass(center=i.center, size=i.size))
+
     def testMakeHull(self):
         for i1, p1 in enumerate(self.points):
             for i2, p2 in enumerate(self.points):
@@ -114,7 +121,7 @@ class IntervalTestMixin:
                 self.assertIs(expanded == lhs, lhs.contains(rhs))
             for rhs in self.points:
                 self.assertEqual(lhs.expandedTo(rhs),
-                                 lhs.expandedTo(self.IntervalClass(rhs, rhs)))
+                                 lhs.expandedTo(self.IntervalClass(min=rhs, max=rhs)))
 
     def testDilatedBy(self):
         for lhs in itertools.chain(self.finite, self.singular):
@@ -143,7 +150,7 @@ class RealIntervalTestCase(unittest.TestCase, IntervalTestMixin):
     IntervalClass = RealInterval
 
     def setUp(self):
-        self.points = [Real(-1.5), Real(5.0), Real(6.8), Real(8.2)]
+        self.points = [Real(-1.5), Real(5.0), Real(6.75), Real(8.625)]
         self.a = self.points[0]
         self.b = self.points[1]
         self.makeIntervals()
@@ -151,6 +158,9 @@ class RealIntervalTestCase(unittest.TestCase, IntervalTestMixin):
     def testTypes(self):
         self.assertIs(self.IntervalClass.Scalar, Real)
         self.assertIs(self.IntervalClass.Scalar, Real)
+
+    def testCenter(self):
+        self.assertEqual(self.ab.center, 0.5*(self.a + self.b))
 
     def testStr(self):
         for i in itertools.chain(self.finite, self.singular, self.empty):
@@ -174,6 +184,10 @@ class IndexIntervalTestCase(unittest.TestCase, IntervalTestMixin):
 
     def testTypes(self):
         self.assertIs(self.IntervalClass.Scalar, Index)
+
+    def testCenter(self):
+        self.assertEqual(self.IntervalClass(min=2, max=4).center, 3)
+        self.assertEqual(self.IntervalClass(min=1, max=4).center, 3)
 
     def testStr(self):
         for i in itertools.chain(self.finite, self.singular, self.empty):
