@@ -8,7 +8,7 @@ from cipells import RealInterval, IndexInterval, Real, Index
 
 class TestIntervals:
 
-    def __init__(self, IntervalClass, points):
+    def __init__(self, IntervalClass, points, n=None):
         self.nonsingular = []
         self.singular = []
         self.empty = []
@@ -20,6 +20,16 @@ class TestIntervals:
                     self.empty.append(IntervalClass(min=lhs, max=rhs))
                 else:
                     self.singular.append(IntervalClass(min=lhs, max=rhs))
+        if n is not None:
+            self.nonsingular = self.subset(self.nonsingular, n)
+            self.singular = self.subset(self.singular, n)
+            self.empty = self.subset(self.empty, n)
+
+    @staticmethod
+    def subset(seq, n):
+        if len(seq) > n:
+            return [seq[i] for i in np.random.choice(len(seq), n)]
+        return seq
 
     @property
     def finite(self):
@@ -167,7 +177,7 @@ class RealIntervalTestCase(unittest.TestCase, IntervalTestMixin):
         self.points = [Real(-1.5), Real(5.0), Real(6.75), Real(8.625)]
         self.a = self.points[0]
         self.b = self.points[1]
-        self.intervals = TestIntervals(self.IntervalClass, self.points)
+        self.intervals = TestIntervals(self.IntervalClass, self.points, n=3)
         self.ab = self.IntervalClass(min=self.a, max=self.b)
         self.ba = self.IntervalClass(min=self.b, max=self.a)
 
@@ -195,7 +205,7 @@ class IndexIntervalTestCase(unittest.TestCase, IntervalTestMixin):
         self.points = [Index(-2), Index(4), Index(7), Index(11)]
         self.a = self.points[0]
         self.b = self.points[1]
-        self.intervals = TestIntervals(self.IntervalClass, self.points)
+        self.intervals = TestIntervals(self.IntervalClass, self.points, n=3)
         self.ab = self.IntervalClass(min=self.a, max=self.b)
         self.ba = self.IntervalClass(min=self.b, max=self.a)
 

@@ -9,7 +9,7 @@ from .Interval import TestIntervals
 
 class TestBoxes:
 
-    def __init__(self, BoxClass, points):
+    def __init__(self, BoxClass, points, n=None):
         self.intervals = TestIntervals(BoxClass.Interval, points)
         self.finite = list(BoxClass(x=x, y=y)
                            for x in self.intervals.finite
@@ -23,6 +23,11 @@ class TestBoxes:
         self.xyEmpty = list(BoxClass(x=x, y=y)
                             for x in self.intervals.empty
                             for y in self.intervals.empty)
+        if n is not None:
+            self.finite = self.intervals.subset(self.finite, n)
+            self.xEmpty = self.intervals.subset(self.xEmpty, n)
+            self.yEmpty = self.intervals.subset(self.yEmpty, n)
+            self.xyEmpty = self.intervals.subset(self.xyEmpty, n)
 
     @property
     def empty(self):
@@ -222,7 +227,7 @@ class RealBoxTestCase(unittest.TestCase, BoxTestMixin):
 
     def setUp(self):
         self.points = [Real(-1.5), Real(5.0), Real(6.75), Real(8.625)]
-        self.boxes = TestBoxes(self.BoxClass, self.points)
+        self.boxes = TestBoxes(self.BoxClass, self.points, n=3)
 
     def testTypes(self):
         self.assertIs(self.BoxClass.Scalar, Real)
@@ -238,7 +243,7 @@ class IndexBoxTestCase(unittest.TestCase, BoxTestMixin):
 
     def setUp(self):
         self.points = [Index(-2), Index(4), Index(7), Index(11)]
-        self.boxes = TestBoxes(self.BoxClass, self.points)
+        self.boxes = TestBoxes(self.BoxClass, self.points, n=3)
 
     def testTypes(self):
         self.assertIs(self.BoxClass.Scalar, Index)
