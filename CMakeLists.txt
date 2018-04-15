@@ -9,6 +9,7 @@ add_library(cipells
     src/formatting.cc
     src/XYTuple.cc
     src/Interval.cc
+    src/Box.cc
 )
 target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
 target_include_directories(cipells
@@ -41,6 +42,7 @@ pybind11_add_module(_cipells
     src/python/module.cc
     src/python/XYTuple.cc
     src/python/Interval.cc
+    src/python/Box.cc
 )
 target_include_directories(_cipells
     PUBLIC
@@ -77,3 +79,4 @@ endfunction(add_python_test)
 add_python_test(continuous1d)
 add_python_test(XYTuple)
 add_python_test(Interval)
+add_python_test(Box)
