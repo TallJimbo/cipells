@@ -94,7 +94,7 @@ public:
     Derived & erodeBy(Scalar rhs) { return dilateBy(-rhs); }
     Derived erodedBy(Scalar rhs) const { return _copy().erodeBy(rhs); }
 
-    void format(Formatter & formatter, char const * & tmpl) const;
+    void format(Writer & writer, FormatSpec const & spec) const;
 
 private:
 

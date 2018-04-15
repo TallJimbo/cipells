@@ -80,8 +80,7 @@ void wrapBox(py::class_<Derived, Args...> & cls) {
     cls.def("dilatedBy", py::overload_cast<XYTuple<T> const &>(&Derived::dilatedBy, py::const_));
     cls.def("erodedBy", py::overload_cast<T>(&Derived::erodedBy, py::const_));
     cls.def("erodedBy", py::overload_cast<XYTuple<T> const &>(&Derived::erodedBy, py::const_));
-    cls.def("__str__", &Derived::str);
-    cls.def("__repr__", &Derived::repr);
+    pyFormattable(cls);
 }
 
 } // anonymous

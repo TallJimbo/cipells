@@ -1,4 +1,5 @@
 #define CIPELLS_formatting_cc_SRC
+#include <cstring>
 #include "impl/formatting.h"
 
 namespace cipells { namespace detail {
@@ -9,29 +10,29 @@ char const * const ScalarFormatTraits<Index>::TMPL = "{:d}";
 char const * const ScalarFormatTraits<Real>::NAME = "Real";
 char const * const ScalarFormatTraits<Real>::TMPL = "{:0.15g}";
 
-bool isTemplateRepr(char const *& tmpl) {
+bool compareFormatSpec(FormatSpec const & spec, char const * cs) {
+    char const * c1 = spec.first;
+    char const * c2 = cs;
+    while (true) {
+        if (c1 == spec.second) {
+            return *c2 == '\0'; // return true if we reach the ends together
+        }
+        if (*c2 == '\0') return false;
+        if (*c1 != *c2) return false;
+        ++c1;
+        ++c2;
+    }
+}
+
+FormatSpec extractFormatSpec(char const *& tmpl) {
     if (*tmpl == ':') {
         ++tmpl;
     }
-    char const * end = tmpl;
-    while (*end && *end != '}') {
-        ++end;
-    }
-    if (*end != '}') {
+    FormatSpec result(tmpl, std::strchr(tmpl, '}'));
+    if (result.second == nullptr) {
         throw fmt::FormatError("missing '}' in format string");
     }
-    bool result = false;
-    if (tmpl + 1 == end) {
-        if (*tmpl == 'r') {
-            result = true;
-        } else if (*tmpl != 's') {
-            throw fmt::FormatError("bad format string: must be '', 's', or 'r'");
-        }
-    } else if (tmpl != end) {
-        throw fmt::FormatError(
-            fmt::format("format string '{}' too long: must be '', 's', or 'r'", std::string(tmpl, end)));
-    }
-    tmpl = end + 1;
+    tmpl = result.second + 1;
     return result;
 }
 

@@ -153,6 +153,12 @@ class IntervalTestMixin:
         for i in self.intervals.all:
             self.assertEqual(eval(repr(i)), i)
 
+    def testFormat(self):
+        for i in self.intervals.all:
+            self.assertEqual(str(i), "{:s}".format(i))
+            self.assertEqual(str(i), "{}".format(i))
+            self.assertEqual(repr(i), "{:r}".format(i))
+
 
 class RealIntervalTestCase(unittest.TestCase, IntervalTestMixin):
     IntervalClass = RealInterval

@@ -12,11 +12,19 @@ template <typename CharType,
           typename ArgFormatter>
 class BasicFormatter;
 
+template <typename CharType>
+class BasicWriter;
+
 } // namespace fmt
 
 namespace cipells { namespace detail {
 
 using Formatter = fmt::BasicFormatter<char, fmt::ArgFormatter<char>>;
+using Writer = fmt::BasicWriter<char>;
+
+using FormatSpec = std::pair<char const*, char const*>;
+
+FormatSpec extractFormatSpec(char const *& tmpl);
 
 template <typename Derived>
 class Formattable {
@@ -25,16 +33,18 @@ public:
     std::string str() const;
     std::string repr() const;
 
-    void format(Formatter & formatter, char const * & tmpl) const = delete;
+    void format(Writer & writer, FormatSpec const & spec) const = delete;
 
     friend void format_arg(
         Formatter & formatter,
         char const * & tmpl,
         Formattable<Derived> const & self
     ) {
-        static_cast<Derived const &>(self).format(formatter, tmpl);
+        self._formatArg(formatter, extractFormatSpec(tmpl));
     }
 
+private:
+    void _formatArg(Formatter & formatter, FormatSpec const & spec) const;
 };
 
 }} // cipells::detail

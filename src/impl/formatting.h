@@ -2,6 +2,7 @@
 #define CIPELLS_IMPL_formatting_h_INCLUDED
 
 #include "fmt/format.h"
+#include "fmt/string.h"
 
 #include "cipells/formatting.h"
 #include "cipells/common.h"
@@ -52,13 +53,32 @@ inline ScalarFormatProxy<T> formatScalar(T v) { return ScalarFormatProxy<T>(v); 
 
 
 template <typename Derived>
-std::string Formattable<Derived>::str() const { return fmt::format("{:s}", *this); }
+std::string Formattable<Derived>::str() const {
+    static char const * const spec = "s";
+    fmt::StringWriter writer;
+    static_cast<Derived const &>(*this).format(writer, FormatSpec(spec, spec + 1));
+    std::string result;
+    writer.move_to(result);
+    return result;
+}
 
 template <typename Derived>
-std::string Formattable<Derived>::repr() const { return fmt::format("{:r}", *this); }
+std::string Formattable<Derived>::repr() const {
+    static char const * const spec = "r";
+    fmt::StringWriter writer;
+    static_cast<Derived const &>(*this).format(writer, FormatSpec(spec, spec + 1));
+    std::string result;
+    writer.move_to(result);
+    return result;
+}
+
+template <typename Derived>
+void Formattable<Derived>::_formatArg(Formatter & formatter, FormatSpec const & spec) const {
+    static_cast<Derived const &>(*this).format(formatter.writer(), spec);
+}
 
 
-bool isTemplateRepr(char const * & tmpl);
+bool compareFormatSpec(FormatSpec const & spec, char const * cs);
 
 
 #ifndef CIPELLS_formatting_cc_SRC

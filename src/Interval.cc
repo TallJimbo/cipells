@@ -122,28 +122,30 @@ Derived & BaseInterval<T, Derived>::dilateBy(Scalar rhs) {
 }
 
 template <typename T, typename Derived>
-void BaseInterval<T, Derived>::format(Formatter & formatter, char const * & tmpl) const {
-    if (detail::isTemplateRepr(tmpl)) {
+void BaseInterval<T, Derived>::format(Writer & writer, FormatSpec const & spec) const {
+    if (detail::compareFormatSpec(spec, "r")) {
         if (isEmpty()) {
-            formatter.writer().write("{0:s}Interval()", detail::ScalarFormatTraits<T>::NAME);
+            writer.write("{0:s}Interval()", detail::ScalarFormatTraits<T>::NAME);
         } else {
-            formatter.writer().write(
+            writer.write(
                 "{0:s}Interval(min={1}, max={2})",
                 detail::ScalarFormatTraits<T>::NAME,
                 detail::formatScalar(min()),
                 detail::formatScalar(max())
             );
         }
-    } else {
+    } else if (detail::compareFormatSpec(spec, "s") || spec.first == spec.second) {
         if (isEmpty()) {
-            formatter.writer().write("[]");
+            writer.write("[]");
         } else {
-            formatter.writer().write(
+            writer.write(
                 "[{0}, {1}]",
                 detail::formatScalar(min()),
                 detail::formatScalar(max())
             );
         }
+    } else {
+        throw fmt::FormatError("Format spec for Interval must be 'r', 's', or ''.");
     }
 }
 

@@ -5,20 +5,22 @@
 namespace cipells {
 
 template <typename T>
-void XYTuple<T>::format(detail::Formatter & formatter, char const * & tmpl) const {
-    if (detail::isTemplateRepr(tmpl)) {
-        formatter.writer().write(
+void XYTuple<T>::format(detail::Writer & writer, detail::FormatSpec const & spec) const {
+    if (detail::compareFormatSpec(spec, "r")) {
+        writer.write(
             "{0:s}2(x={1}, y={2})",
             detail::ScalarFormatTraits<T>::NAME,
             detail::formatScalar(x()),
             detail::formatScalar(y())
         );
-    } else {
-        formatter.writer().write(
+    } else if (detail::compareFormatSpec(spec, "s") || spec.first == spec.second) {
+        writer.write(
             "(x={0}, y={1})",
             detail::formatScalar(x()),
             detail::formatScalar(y())
         );
+    } else {
+        throw fmt::FormatError("Format spec for XYTuple must be 'r', 's', or ''.");
     }
 }
 

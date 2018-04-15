@@ -41,14 +41,16 @@ std::array<XYTuple<T>, 4> BaseBox<T, Derived>::corners() const {
 }
 
 template <typename T, typename Derived>
-void BaseBox<T, Derived>::format(Formatter & formatter, char const * & tmpl) const {
-    if (detail::isTemplateRepr(tmpl)) {
-        formatter.writer().write(
+void BaseBox<T, Derived>::format(Writer & writer, FormatSpec const & spec) const {
+    if (detail::compareFormatSpec(spec, "r")) {
+        writer.write(
             "{0:s}Box(x={1:r}, y={2:r})",
             detail::ScalarFormatTraits<T>::NAME, x(), y()
         );
+    } else if (detail::compareFormatSpec(spec, "s") || spec.first == spec.second) {
+        writer.write("{0}×{1}", x(), y());
     } else {
-        formatter.writer().write("{0}×{1}", x(), y());
+        throw fmt::FormatError("Format spec for Box must be 'r', 's', or ''.");
     }
 }
 

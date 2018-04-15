@@ -63,6 +63,12 @@ class XYTupleTestMixin:
         self.assertEqual(p.dot(r), p.x*r.x + p.y*r.y)
         self.assertEqual(p.dot((1, 2)), p.x*1 + p.y*2)
 
+    def testFormat(self):
+        p = self.TupleClass(x=5, y=6)
+        self.assertEqual(str(p), "{:s}".format(p))
+        self.assertEqual(str(p), "{}".format(p))
+        self.assertEqual(repr(p), "{:r}".format(p))
+
 
 class Real2TestCase(unittest.TestCase, XYTupleTestMixin):
     TupleClass = Real2

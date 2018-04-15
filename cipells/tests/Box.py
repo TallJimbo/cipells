@@ -210,6 +210,12 @@ class BoxTestMixin:
         for b in self.boxes.finite:
             self.assertEqual(str(b), "{}×{}".format(b.x, b.y))
 
+    def testFormat(self):
+        for b in self.boxes.all:
+            self.assertEqual(str(b), "{:s}".format(b))
+            self.assertEqual(str(b), "{}".format(b))
+            self.assertEqual(repr(b), "{:r}".format(b))
+
 
 class RealBoxTestCase(unittest.TestCase, BoxTestMixin):
     BoxClass = RealBox
