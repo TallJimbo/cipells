@@ -24,7 +24,11 @@ set_target_properties(cipells
         CXX_EXTENSIONS NO
 )
 
-configure_file(cipells/__init__.py cipells/__init__.py COPYONLY)
+function(cipells_add_python MODULE_NAME)
+    configure_file(cipells/${MODULE_NAME}.py cipells/${MODULE_NAME}.py COPYONLY)
+endfunction(cipells_add_python)
+
+cipells_add_python(__init__)
 
 pybind11_add_module(continuous1d src/experiments/continuous1d.cc)
 target_include_directories(continuous1d
@@ -36,7 +40,6 @@ set_target_properties(continuous1d
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY cipells/experiments
 )
-
 
 pybind11_add_module(_cipells
     src/python/module.cc
@@ -60,10 +63,10 @@ target_link_libraries(_cipells
 )
 
 enable_testing()
-configure_file(cipells/tests/__init__.py cipells/tests/__init__.py COPYONLY)
+cipells_add_python(tests/__init__)
 
-function(add_python_test TEST_NAME)
-    configure_file(cipells/tests/${TEST_NAME}.py cipells/tests/${TEST_NAME}.py COPYONLY)
+function(cipells_add_test TEST_NAME)
+    cipells_add_python(tests/${TEST_NAME})
     add_test(NAME test_${TEST_NAME}
         COMMAND
             ${PYTHON_EXECUTABLE} -m unittest cipells.tests.${TEST_NAME}
@@ -74,9 +77,9 @@ function(add_python_test TEST_NAME)
         PROPERTIES
             ENVIRONMENT LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}
     )
-endfunction(add_python_test)
+endfunction(cipells_add_test)
 
-add_python_test(continuous1d)
-add_python_test(XYTuple)
-add_python_test(Interval)
-add_python_test(Box)
+cipells_add_test(continuous1d)
+cipells_add_test(XYTuple)
+cipells_add_test(Interval)
+cipells_add_test(Box)
