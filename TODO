@@ -1,0 +1,3 @@
+- Support arbitrary iterables in Interval.makeHull and Box.makeHull.
+- Support numpy arrays in Interval.makeHull and maybe Box.makeHull.
+- Add scalar overrides for methods taking XYTuple.
