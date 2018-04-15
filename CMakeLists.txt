@@ -58,36 +58,22 @@ target_link_libraries(_cipells
 )
 
 enable_testing()
+configure_file(cipells/tests/__init__.py cipells/tests/__init__.py COPYONLY)
 
-configure_file(tests/continuous1d.py test_continuous1d.py COPYONLY)
-add_test(NAME test_continuous1d
-    COMMAND
-        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/test_continuous1d.py
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
+function(add_python_test TEST_NAME)
+    configure_file(cipells/tests/${TEST_NAME}.py cipells/tests/${TEST_NAME}.py COPYONLY)
+    add_test(NAME test_${TEST_NAME}
+        COMMAND
+            ${PYTHON_EXECUTABLE} -m unittest cipells.tests.${TEST_NAME}
+        WORKING_DIRECTORY
+            ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    set_tests_properties(test_${TEST_NAME}
+        PROPERTIES
+            ENVIRONMENT LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}
+    )
+endfunction(add_python_test)
 
-configure_file(tests/XYTuple.py test_XYTuple.py COPYONLY)
-add_test(NAME test_XYTuple
-    COMMAND
-        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/test_XYTuple.py
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-set_tests_properties(test_XYTuple
-    PROPERTIES
-        ENVIRONMENT LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}
-)
-
-
-configure_file(tests/Interval.py test_Interval.py COPYONLY)
-add_test(NAME test_Interval
-    COMMAND
-        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/test_Interval.py
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-set_tests_properties(test_Interval
-    PROPERTIES
-        ENVIRONMENT LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}
-)
+add_python_test(continuous1d)
+add_python_test(XYTuple)
+add_python_test(Interval)

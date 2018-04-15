@@ -58,9 +58,9 @@ class IntervalTestMixin:
             self.assertEqual(i, self.IntervalClass(center=i.center, size=i.size))
 
     def testMakeHull(self):
-        for i1, p1 in enumerate(self.points):
-            for i2, p2 in enumerate(self.points):
-                seq = list(self.points[i1:i2+1])
+        for n1, p1 in enumerate(self.points):
+            for n2, p2 in enumerate(self.points):
+                seq = list(self.points[n1:n2+1])
                 i = self.IntervalClass(min=p1, max=p2)
                 self.assertEqual(i, self.IntervalClass.makeHull(seq))
                 np.random.shuffle(seq)
@@ -166,7 +166,6 @@ class RealIntervalTestCase(unittest.TestCase, IntervalTestMixin):
         self.ba = self.IntervalClass(min=self.b, max=self.a)
 
     def testTypes(self):
-        self.assertIs(self.IntervalClass.Scalar, Real)
         self.assertIs(self.IntervalClass.Scalar, Real)
 
     def testCenter(self):

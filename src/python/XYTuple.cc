@@ -1,3 +1,5 @@
+#include "pybind11/pybind11.h"
+
 #include "cipells/python.h"
 #include "cipells/XYTuple.h"
 
