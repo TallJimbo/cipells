@@ -10,6 +10,7 @@ add_library(cipells
     src/XYTuple.cc
     src/Interval.cc
     src/Box.cc
+    src/transforms.cc
 )
 target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
 target_include_directories(cipells
@@ -46,6 +47,7 @@ pybind11_add_module(_cipells
     src/python/XYTuple.cc
     src/python/Interval.cc
     src/python/Box.cc
+    src/python/transforms.cc
 )
 target_include_directories(_cipells
     PUBLIC

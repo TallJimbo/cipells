@@ -60,6 +60,8 @@ utils::Deferrer pyInterval(pybind11::module & module);
 
 utils::Deferrer pyBox(pybind11::module & module);
 
+utils::Deferrer pyTransforms(pybind11::module & module);
+
 } // namespace cipells
 
 #endif // !CIPELLS_python_h_INCLUDED
