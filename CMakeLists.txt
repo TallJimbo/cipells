@@ -31,6 +31,7 @@ endfunction(cipells_add_python)
 
 cipells_add_python(__init__)
 
+cipells_add_python(experiments/__init__)
 pybind11_add_module(continuous1d src/experiments/continuous1d.cc)
 target_include_directories(continuous1d
     PUBLIC
