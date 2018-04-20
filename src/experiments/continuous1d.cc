@@ -2,6 +2,8 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/numpy.h"
 #include <cmath>
+#include "Eigen/Core"
+#include "Eigen/LU"
 
 #include "cipells/utils/Deferrer.h"
 
@@ -142,6 +144,125 @@ private:
 };
 
 
+class TruncatedGaussian {
+public:
+
+    explicit TruncatedGaussian(AffineTransform const & transform, double flux=1.0,
+                               double s1=1.0, double s2=3.0, int n=4) :
+        _transform(transform),
+        _inv_transform(transform.get_inverse()),
+        _flux(flux),
+        _s1(s1),
+        _s2(s2),
+        _poly(fitPoly(s1, s2, n)),
+        _norm(1.0/std::sqrt(2*M_PI))
+    {
+        double integral = std::erf(_s1/std::sqrt(2));
+        double p1 = s1;
+        double p2 = s2;
+        for (int i = 0; i < n; ++i) {
+            integral += 2*_poly[i]*(p2 - p1)/(i + 1);
+            p1 *= s1;
+            p2 *= s2;
+        }
+        integral *= transform.get_scaling();
+        _norm /= integral;
+        _poly /= integral;
+    }
+
+    explicit TruncatedGaussian(double scaling=1.0, double offset=0.0, double flux=1.0,
+                               double s1=1.0, double s2=3.0, int n=4) :
+        TruncatedGaussian(AffineTransform(scaling, offset), flux, s1, s2, n)
+    {}
+
+    double operator()(double x) const {
+        double t = std::abs(_inv_transform(x));
+        if (t >= _s2) {
+            return 0.0;
+        }
+        if (t >= _s1) {
+            double r = 0.0;
+            double p = 1.0;
+            for (int i = 0; i < _poly.size(); ++i) {
+                r += p*_poly[i];
+                p *= t;
+            }
+            return r;
+        }
+        return std::exp(-0.5*t*t)*_norm;
+    }
+
+    double get_scaling() const { return _transform.get_scaling(); }
+    void set_scaling(double scaling) { _transform.set_scaling(scaling); }
+
+    double get_offset() const { return _transform.get_offset(); }
+    void set_offset(double offset) { _transform.set_offset(offset); }
+
+    double get_flux() const { return _flux; }
+    void set_flux(double flux) { _flux = flux; }
+
+    double get_s1() const { return _s1; }
+
+    double get_s2() const { return _s2; }
+
+    int get_n() const { return _poly.size(); }
+
+    TruncatedGaussian transformedBy(AffineTransform const & t) const {
+        return TruncatedGaussian(_transform.then(t), _flux, _s1, _s2, _poly.size());
+    }
+
+private:
+
+    static Eigen::VectorXd fitPoly(double s1, double s2, int n) {
+        if (n % 2 != 0 || n < 4) {
+            throw std::invalid_argument("n must be a multiple of 2 and >= 4.");
+        }
+        int const h = n/2;
+        double s1e = std::exp(-0.5*s1*s1)/std::sqrt(2*M_PI);
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(n, n);
+        Eigen::VectorXd b = Eigen::VectorXd::Zero(n);
+        // Rows corresponding to value constraints:
+        // equal to Gaussian at s1, zero at s2.
+        double p1 = 1.0;
+        double p2 = 1.0;
+        for (int j = 0; j < n; ++j) {
+            A(0, j) = p1;
+            A(h, j) = p2;
+            p1 *= s1;
+            p2 *= s2;
+        }
+        b[0] = s1e;
+        // b[h] == 0.0
+
+        // Rows corresponding to derivative constraints:
+        // again equal to Gaussian at s1, zero at s2.
+        for (int i = 1; i < h; ++i) {
+            for (int j = i; j < n; ++j) {
+                int r = 1 + j - i;
+                A(i,     j) = r*A(i - 1,     j)/s1;
+                A(i + h, j) = r*A(i + h - 1, j)/s2;
+            }
+
+        }
+        b[1] = -s1*s1e;
+        for (int i = 2; i < h; ++i) {
+            b[i] = -s1*b[i - 1] - (i - 1)*b[i - 2];
+        }
+        // b[h:] === 0.0
+
+        return A.partialPivLu().solve(b);
+    }
+
+    AffineTransform _transform;
+    AffineTransform _inv_transform;
+    double _flux;
+    double _s1;
+    double _s2;
+    double _norm;
+    Eigen::VectorXd _poly;
+};
+
+
 PYBIND11_MODULE(continuous1d, m) {
     utils::Deferrer helper;
 
@@ -213,6 +334,33 @@ PYBIND11_MODULE(continuous1d, m) {
             cls.def("transformedBy", &GaussianPixelConvolution::transformedBy);
             cls.def_property_readonly("gaussian", &GaussianPixelConvolution::get_gaussian);
             cls.def_property_readonly("pixel", &GaussianPixelConvolution::get_pixel);
+        }
+    );
+
+    helper.add(
+        py::class_<TruncatedGaussian>(m, "TruncatedGaussian"),
+        [](auto & cls) {
+            cls.def(py::init<double, double, double, double, double, int>(),
+                    "scaling"_a=1.0, "offset"_a=0.0, "flux"_a=1.0, "s1"_a=1.0, "s2"_a=3.0, "n"_a=4);
+            cls.def("__call__", py::vectorize(&TruncatedGaussian::operator()));
+            cls.def("transformedBy", &TruncatedGaussian::transformedBy);
+            cls.def_property("scaling", &TruncatedGaussian::get_scaling, &TruncatedGaussian::set_scaling);
+            cls.def_property("offset", &TruncatedGaussian::get_offset, &TruncatedGaussian::set_offset);
+            cls.def_property("flux", &TruncatedGaussian::get_flux, &TruncatedGaussian::set_flux);
+            cls.def_property_readonly("s1", &TruncatedGaussian::get_s1);
+            cls.def_property_readonly("s2", &TruncatedGaussian::get_s2);
+            cls.def_property_readonly("n", &TruncatedGaussian::get_n);
+            cls.def(
+                "__repr__",
+                [](TruncatedGaussian const & self) {
+                    return py::str(
+                        "TruncatedGaussian(scaling={}, offset={}, flux={}, s1={}, s2={}, n={})"
+                    ).format(
+                        self.get_scaling(), self.get_offset(), self.get_flux(),
+                        self.get_s1(), self.get_s2(), self.get_n()
+                    );
+                }
+            );
         }
     );
 

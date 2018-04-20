@@ -37,6 +37,8 @@ target_include_directories(continuous1d
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen
 )
 set_target_properties(continuous1d
     PROPERTIES
