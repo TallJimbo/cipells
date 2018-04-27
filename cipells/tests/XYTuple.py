@@ -26,6 +26,16 @@ class XYTupleTestMixin:
         with self.assertRaises(TypeError):
             p[0] = 3
 
+    def testVector(self):
+        p = self.TupleClass(x=5, y=6)
+        v = p.vector
+        self.assertEqual(v[0], p.x)
+        self.assertEqual(v[1], p.y)
+        self.assertEqual(v.dtype, np.dtype(p.Scalar))
+        self.assertFalse(v.flags["WRITEABLE"])
+        r = self.TupleClass(v)
+        self.assertEqual(p, r)
+
     def testUnaryOps(self):
         p = self.TupleClass(x=5, y=6)
         r = +p

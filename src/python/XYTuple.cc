@@ -1,4 +1,5 @@
 #include "pybind11/pybind11.h"
+#include "pybind11/eigen.h"
 
 #include "cipells/python.h"
 #include "cipells/XYTuple.h"
@@ -13,6 +14,7 @@ namespace {
 template <typename T, typename ...Args>
 void wrapXYTuple(py::class_<XYTuple<T>, Args...> & cls) {
     cls.def(py::init<T, T>(), "x"_a, "y"_a);
+    cls.def(py::init<Eigen::Ref<Vector2<T> const> const &>(), "vector"_a);
     cls.def_property_readonly("x", [](XYTuple<T> const & self) -> T { return self.x(); });
     cls.def_property_readonly("y", [](XYTuple<T> const & self) -> T { return self.y(); });
     cls.def(
@@ -28,6 +30,7 @@ void wrapXYTuple(py::class_<XYTuple<T>, Args...> & cls) {
             return self[i];
         }
     );
+    cls.def("__len__", [](py::object) { return 2; });
     cls.def(
         "__pos__",
         [](py::object self) {
@@ -69,6 +72,12 @@ void wrapXYTuple(py::class_<XYTuple<T>, Args...> & cls) {
     cls.def("__eq__", &XYTuple<T>::operator==, py::is_operator());
     cls.def("__ne__", &XYTuple<T>::operator!=, py::is_operator());
     cls.def("dot", &XYTuple<T>::dot);
+    cls.def_property_readonly(
+        "vector",
+        [](XYTuple<T> const & self) -> Vector2<T> const {
+            return self.vector();
+        }
+    );
     pyFormattable(cls);
 }
 

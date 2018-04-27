@@ -17,6 +17,8 @@ target_include_directories(cipells
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:external/eigen>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/eigen>
 )
 set_target_properties(cipells
     PROPERTIES
