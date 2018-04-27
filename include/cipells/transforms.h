@@ -1,84 +1,123 @@
 #ifndef CIPELLS_transforms_h_INCLUDED
 #define CIPELLS_transforms_h_INCLUDED
 
+#include "Eigen/Core"
+
 #include "cipells/XYTuple.h"
 #include "cipells/fwd/transforms.h"
 #include "cipells/formatting.h"
 
 namespace cipells {
 
-class Translation : public detail::Formattable<Translation> {
+class Identity : public detail::Formattable<Identity> {
 public:
 
-    Translation() : _offset(0, 0) {}
+    using Matrix = decltype(Matrix2<Real>::Identity());
+    using Vector = decltype(Vector2<Real>::Zero());
 
-    Translation(Real x, Real y) : _offset(x, y) {}
+    Identity() {}
 
-    explicit Translation(Real2 offset) : _offset(offset) {}
+    Real2 operator()(Real2 const & xy) const { return xy; }
 
-    Real2 operator()(Real2 const & xy) const { return xy + _offset; }
+    Identity inverted() const { return Identity(); }
 
-    Translation inverted() const { return Translation(-_offset); }
-
-    Translation then(Translation const & next) const { return Translation(_offset + next._offset); }
-    Affine then(Jacobian const & next) const;
+    Identity then(Identity const &) const { return Identity(); }
+    Translation then(Translation const & next) const;
+    Jacobian then(Jacobian const & next) const;
     Affine then(Affine const & next) const;
-
-    Translation const & translation() const { return *this; }
-    Jacobian jacobian() const;
 
     Real det() const { return 1; }
 
     void format(detail::Writer & writer, detail::FormatSpec const & spec) const;
 
-    Real2 const & offset() const { return _offset; }
+    Matrix matrix() const { return Matrix2<Real>::Identity(); }
+
+    Vector vector() const { return Vector2<Real>::Zero(); }
+
+};
+
+class Translation : public detail::Formattable<Translation> {
+public:
+
+    using Matrix = decltype(Matrix2<Real>::Identity());
+    using Vector = Vector2<Real>;
+
+    Translation() : _vector(0, 0) {}
+
+    Translation(Identity const &) : Translation() {}
+
+    explicit Translation(Real2 const & offset) : _vector(offset.vector()) {}
+
+    explicit Translation(Eigen::Ref<Vector const> const & vector) : _vector(vector) {}
+
+    Real2 operator()(Real2 const & xy) const { return Real2(xy.vector() + _vector); }
+
+    Translation inverted() const { return Translation(-_vector); }
+
+    Translation then(Identity const &) const { return *this; }
+    Translation then(Translation const & next) const { return Translation(_vector + next._vector); }
+    Affine then(Jacobian const & next) const;
+    Affine then(Affine const & next) const;
+
+    Real det() const { return 1; }
+
+    void format(detail::Writer & writer, detail::FormatSpec const & spec) const;
+
+    Matrix matrix() const { return Matrix2<Real>::Identity(); }
+
+    Vector const & vector() const { return _vector; }
 
 private:
-    Real2 _offset;
+    Vector _vector;
 };
 
 
 class Jacobian : public detail::Formattable<Jacobian> {
 public:
 
-    Jacobian() : _du(1, 0), _dv(0, 1) {}
+    using Matrix = Matrix2<Real>;
+    using Vector = decltype(Vector2<Real>::Zero());
 
-    Jacobian(Real dudx, Real dudy, Real dvdx, Real dvdy) : _du(dudx, dudy), _dv(dvdx, dvdy) {}
+    Jacobian() : _matrix(Matrix::Identity()) {}
 
-    explicit Jacobian(Real2 const & du, Real2 const & dv) : _du(du), _dv(dv) {}
+    Jacobian(Identity const &) : Jacobian() {}
 
-    Real2 operator()(Real2 const & xy) const { return Real2(_du.dot(xy), _dv.dot(xy)); }
+    explicit Jacobian(Eigen::Ref<Matrix const> const & matrix) : _matrix(matrix) {}
+
+    Real2 operator()(Real2 const & xy) const { return Real2(matrix()*xy.vector()); }
 
     Jacobian inverted() const;
 
+    Jacobian then(Identity const &) const { return *this; }
     Affine then(Translation const & next) const;
     Jacobian then(Jacobian const & next) const;
     Affine then(Affine const & next) const;
-
-    Translation translation() const { return Translation(); }
-    Jacobian const & jacobian() const { return *this; }
 
     Real det() const;
 
     void format(detail::Writer & writer, detail::FormatSpec const & spec) const;
 
-    Real2 const & du() const { return _du; }
-    Real2 const & dv() const { return _dv; }
+    Matrix const & matrix() const { return _matrix; }
+
+    Vector vector() const { return Vector2<Real>::Zero(); }
 
 private:
-    Real2 _du;
-    Real2 _dv;
+     Matrix _matrix;
 };
 
 
 class Affine : public detail::Formattable<Affine> {
 public:
 
+    using Matrix = Jacobian::Matrix;
+    using Vector = Translation::Vector;
+
     Affine() : _jacobian(), _translation() {}
 
-    Affine(Real dudx, Real dudy, Real dvdx, Real dvdy, Real x, Real y) :
-        _jacobian(dudx, dudy, dvdx, dvdy),
-        _translation(x, y)
+    Affine(Identity const &) : Affine() {}
+
+    explicit Affine(Eigen::Ref<Matrix const> const & matrix, Eigen::Ref<Vector const> const & vector) :
+        _jacobian(matrix), _translation(vector)
     {}
 
     explicit Affine(Jacobian const & jacobian, Translation const & translation) :
@@ -94,14 +133,18 @@ public:
 
     Affine inverted() const;
 
+    Affine then(Identity const &) const { return *this; }
     Affine then(Translation const & next) const;
     Affine then(Jacobian const & next) const;
     Affine then(Affine const & next) const;
 
-    Translation const & translation() const { return _translation; }
-    Jacobian const & jacobian() const { return _jacobian; }
-
     Real det() const { return _jacobian.det(); }
+
+    Matrix const & matrix() const { return _jacobian.matrix(); }
+    Vector const & vector() const { return _translation.vector(); }
+
+    Jacobian const & jacobian() const { return _jacobian; }
+    Translation const & translation() const { return _translation; }
 
     void format(detail::Writer & writer, detail::FormatSpec const & spec) const;
 
@@ -111,7 +154,9 @@ private:
 };
 
 
-inline Jacobian Translation::jacobian() const { return Jacobian(); }
+inline Translation Identity::then(Translation const & next) const { return next; }
+inline Jacobian Identity::then(Jacobian const & next) const { return next; }
+inline Affine Identity::then(Affine const & next) const { return next; }
 
 } // namespace cipells
 

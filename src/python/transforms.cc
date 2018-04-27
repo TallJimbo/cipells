@@ -1,4 +1,5 @@
 #include "pybind11/pybind11.h"
+#include "pybind11/eigen.h"
 
 #include "cipells/python.h"
 #include "cipells/transforms.h"
@@ -12,14 +13,26 @@ namespace {
 
 template <typename T, typename ...Args>
 void wrapTransform(py::class_<T, Args...> & cls) {
+    cls.def(py::init<>());
     cls.def("__call__", &T::operator());
     cls.def("inverted", &T::inverted);
+    cls.def("then", py::overload_cast<Identity const &>(&T::then, py::const_));
     cls.def("then", py::overload_cast<Translation const &>(&T::then, py::const_));
     cls.def("then", py::overload_cast<Jacobian const &>(&T::then, py::const_));
     cls.def("then", py::overload_cast<Affine const &>(&T::then, py::const_));
-    cls.def_property_readonly("translation", &T::translation, py::return_value_policy::copy);
-    cls.def_property_readonly("jacobian", &T::jacobian, py::return_value_policy::copy);
     cls.def_property_readonly("det", &T::det);
+    cls.def_property_readonly(
+        "matrix",
+        [](T const & self) -> Matrix2<Real> const {
+            return self.matrix();
+        }
+    );
+    cls.def_property_readonly(
+        "vector",
+        [](T const & self) -> Vector2<Real> const {
+            return self.vector();
+        }
+    );
     pyFormattable(cls);
 }
 
@@ -28,32 +41,38 @@ void wrapTransform(py::class_<T, Args...> & cls) {
 utils::Deferrer pyTransforms(pybind11::module & module) {
     utils::Deferrer helper;
     helper.add(
+        py::class_<Identity>(module, "Identity"),
+        [](auto & cls) {
+            wrapTransform(cls);
+        }
+    );
+    helper.add(
         py::class_<Translation>(module, "Translation"),
         [](auto & cls) {
-            cls.def(py::init<Real, Real>(), "x"_a, "y"_a);
-            cls.def(py::init<Real2>(), "offset"_a);
-            cls.def_property_readonly("offset", &Translation::offset, py::return_value_policy::copy);
+            cls.def(py::init<Identity const &>());
+            cls.def(py::init<Real2 const &>());
+            cls.def(py::init<Eigen::Ref<Vector2<Real> const> const &>());
             wrapTransform(cls);
         }
     );
     helper.add(
         py::class_<Jacobian>(module, "Jacobian"),
         [](auto & cls) {
-            cls.def(py::init<Real, Real, Real, Real>(), "dudx"_a, "dudy"_a, "dvdx"_a, "dvdy"_a);
-            cls.def(py::init<Real2, Real2>(), "du"_a, "dv"_a);
-            cls.def_property_readonly("du", &Jacobian::du, py::return_value_policy::copy);
-            cls.def_property_readonly("dv", &Jacobian::dv, py::return_value_policy::copy);
+            cls.def(py::init<Identity const &>());
+            cls.def(py::init<Eigen::Ref<Matrix2<Real> const> const &>());
             wrapTransform(cls);
         }
     );
     helper.add(
         py::class_<Affine>(module, "Affine"),
         [](auto & cls) {
-            cls.def(py::init<Real, Real, Real, Real, Real, Real>(),
-                    "dudx"_a=1, "dudy"_a=0, "dvdx"_a=0, "dvdy"_a=1, "x"_a=0, "y"_a=0);
+            cls.def(py::init<Identity const &>());
+            cls.def(py::init<Eigen::Ref<Matrix2<Real> const> const &, Eigen::Ref<Vector2<Real> const> const &>());
             cls.def(py::init<Jacobian const &, Translation const &>(), "jacobian"_a, "translation"_a);
             cls.def(py::init<Jacobian const &>(), "jacobian"_a);
             cls.def(py::init<Translation const &>(), "translation"_a);
+            cls.def_property_readonly("translation", &Affine::translation, py::return_value_policy::copy);
+            cls.def_property_readonly("jacobian", &Affine::jacobian, py::return_value_policy::copy);
             wrapTransform(cls);
         }
     );

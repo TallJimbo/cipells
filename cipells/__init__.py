@@ -1,13 +1,15 @@
 from ._cipells import (
     Real2, Index2,
     RealInterval, IndexInterval,
-    RealBox, IndexBox
+    RealBox, IndexBox,
+    Identity, Translation, Jacobian, Affine
 )
 import numpy as np
 
 __all__ = ("Real", "Real2", "Index", "Index2",
            "RealInterval", "IndexInterval",
-           "RealBox", "IndexBox")
+           "RealBox", "IndexBox",
+           "Identity", "Translation", "Jacobian", "Affine")
 
 Real = np.float64
 Index = np.int32
