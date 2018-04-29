@@ -5,6 +5,7 @@
 #include "fmt/format.h"
 
 #include "cipells/fwd/XYTuple.h"
+#include "cipells/fwd/Image.h"
 #include "cipells/utils/Deferrer.h"
 #include "cipells/formatting.h"
 
@@ -27,6 +28,33 @@ struct type_caster<cipells::Real2> : public type_caster_base<cipells::Real2> {
 public:
     bool load(handle src, bool convert);
 };
+
+#if 0
+
+class PyImage;
+
+// Custom type caster for Images.
+// Defined in python/images.cc.
+template <typename T>
+struct type_caster<cipells::Image<T>> {
+
+    bool load(handle src, bool);
+
+    static handle cast(cipells::Image<T> const * src, return_value_policy policy, handle parent)
+
+    static PYBIND11_DESCR name();
+
+    operator Image<T> * ();
+    operator Image<T> & ();
+    operator Image<T> && () &&;
+
+    ~type_caster();
+
+private:
+    std::unique_ptr<PyImage> _value;
+};
+
+#endif
 
 }} // namespace pybind11::detail
 
@@ -61,6 +89,8 @@ utils::Deferrer pyInterval(pybind11::module & module);
 utils::Deferrer pyBox(pybind11::module & module);
 
 utils::Deferrer pyTransforms(pybind11::module & module);
+
+utils::Deferrer pyImage(pybind11::module & module);
 
 } // namespace cipells
 

@@ -2,14 +2,17 @@ from ._cipells import (
     Real2, Index2,
     RealInterval, IndexInterval,
     RealBox, IndexBox,
-    Identity, Translation, Jacobian, Affine
+    Identity, Translation, Jacobian, Affine,
+    Image,
 )
 import numpy as np
 
 __all__ = ("Real", "Real2", "Index", "Index2",
            "RealInterval", "IndexInterval",
            "RealBox", "IndexBox",
-           "Identity", "Translation", "Jacobian", "Affine")
+           "Identity", "Translation", "Jacobian", "Affine",
+           "Image",
+           )
 
 Real = np.float64
 Index = np.int32
@@ -29,3 +32,4 @@ RealBox.Interval = RealInterval
 IndexBox.Scalar = Index
 IndexBox.slice = property(lambda self: (self.y.slice, self.x.slice))
 IndexBox.Interval = IndexInterval
+

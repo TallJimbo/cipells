@@ -11,6 +11,7 @@ add_library(cipells
     src/Interval.cc
     src/Box.cc
     src/transforms.cc
+    src/Image.cc
 )
 target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
 target_include_directories(cipells
@@ -53,6 +54,7 @@ pybind11_add_module(_cipells
     src/python/Interval.cc
     src/python/Box.cc
     src/python/transforms.cc
+    src/python/Image.cc
 )
 target_include_directories(_cipells
     PUBLIC
@@ -91,3 +93,4 @@ cipells_add_test(XYTuple)
 cipells_add_test(Interval)
 cipells_add_test(Box)
 cipells_add_test(transforms)
+cipells_add_test(Image)
