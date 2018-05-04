@@ -152,6 +152,18 @@ class BoxTestMixin:
                 self.assertIs(lhs == rhs, shouldBeEqual)
                 self.assertIs(lhs != rhs, not shouldBeEqual)
 
+    def testShiftedBy(self):
+        for lhs in self.boxes.finite:
+            for rhs in itertools.product(self.points, repeat=2):
+                shifted = lhs.shiftedBy(rhs)
+                self.assertEqual(lhs.size, shifted.size)
+                self.assertEqual(lhs.min + rhs, shifted.min)
+                self.assertEqual(lhs.max + rhs, shifted.max)
+        for lhs in self.boxes.empty:
+            for rhs in itertools.product(self.points, repeat=2):
+                shifted = lhs.shiftedBy(rhs)
+                self.assertTrue(shifted.isEmpty())
+
     def testClippedTo(self):
         for lhs in self.boxes.all:
             for rhs in self.boxes.all:

@@ -73,6 +73,9 @@ public:
     bool operator==(Derived const & rhs) const { return x() == rhs.x() && y() == rhs.y(); }
     bool operator!=(Derived const & rhs) const { return !(*this == rhs); }
 
+    Derived & shiftBy(XYTuple<T> const & rhs) { _x.shiftBy(rhs.x()); _y.shiftBy(rhs.y()); return _self(); }
+    Derived shiftedBy(XYTuple<T> const & rhs) const { return _copy().shiftBy(rhs); }
+
     Derived & clipTo(Derived const & rhs) { _x.clipTo(rhs.x()); _y.clipTo(rhs.y()); return _self(); }
     Derived clippedTo(Derived const & rhs) const { return _copy().clipTo(rhs); }
 
