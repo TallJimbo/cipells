@@ -71,6 +71,26 @@ target_link_libraries(_cipells
         fmt::fmt-header-only
 )
 
+
+pybind11_add_module(_tests
+    src/python/tests/module.cc
+)
+target_include_directories(_tests
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+set_target_properties(_tests
+    PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY cipells/tests
+)
+target_link_libraries(_tests
+    PRIVATE
+        cipells
+        fmt::fmt-header-only
+)
+
+
 enable_testing()
 cipells_add_python(tests/__init__)
 
