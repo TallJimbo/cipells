@@ -125,6 +125,18 @@ class IntervalTestMixin:
                 self.assertIs(clipped == rhs, lhs.contains(rhs))
                 self.assertIs(clipped == lhs, rhs.contains(lhs))
 
+    def testShiftedBy(self):
+        for lhs in self.intervals.finite:
+            for rhs in self.points:
+                shifted = lhs.shiftedBy(rhs)
+                self.assertEqual(lhs.size, shifted.size)
+                self.assertEqual(lhs.min + rhs, shifted.min)
+                self.assertEqual(lhs.max + rhs, shifted.max)
+        for lhs in self.intervals.empty:
+            for rhs in self.points:
+                shifted = lhs.shiftedBy(rhs)
+                self.assertTrue(shifted.isEmpty())
+
     def testExpandedTo(self):
         for lhs in self.intervals.all:
             for rhs in self.intervals.all:

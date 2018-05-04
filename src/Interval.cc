@@ -78,6 +78,15 @@ bool BaseInterval<T, Derived>::operator==(Derived const & rhs) const {
 }
 
 template <typename T, typename Derived>
+Derived & BaseInterval<T, Derived>::shiftBy(Scalar rhs) {
+    if (!isEmpty()) {
+        _values.first += rhs;
+        _values.second += rhs;
+    }
+    return _self();
+}
+
+template <typename T, typename Derived>
 Derived & BaseInterval<T, Derived>::clipTo(Derived const & rhs) {
     if (!isEmpty()) {
         if (rhs.isEmpty()) {

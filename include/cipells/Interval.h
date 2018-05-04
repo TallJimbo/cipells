@@ -56,6 +56,9 @@ public:
     bool operator==(Derived const & rhs) const;
     bool operator!=(Derived const & rhs) const { return !(*this == rhs); }
 
+    Derived & shiftBy(Scalar rhs);
+    Derived shiftedBy(Scalar rhs) const { return _copy().shiftBy(rhs); }
+
     Derived & clipTo(Derived const & rhs);
     Derived clippedTo(Derived const & rhs) const { return _copy().clipTo(rhs); }
 

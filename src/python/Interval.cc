@@ -56,6 +56,7 @@ void wrapInterval(py::class_<Derived, Args...> & cls) {
     cls.def("intersects", &Derived::intersects);
     cls.def("__eq__", &Derived::operator==, py::is_operator());
     cls.def("__ne__", &Derived::operator!=, py::is_operator());
+    cls.def("shiftedBy", &Derived::shiftedBy);
     cls.def("clippedTo", &Derived::clippedTo);
     cls.def("expandedTo", py::overload_cast<Derived const &>(&Derived::expandedTo, py::const_));
     cls.def("expandedTo", py::overload_cast<T>(&Derived::expandedTo, py::const_));
