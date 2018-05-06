@@ -1,6 +1,8 @@
 #ifndef CIPELLS_formatting_h_INCLUDED
 #define CIPELLS_formatting_h_INCLUDED
 
+#include <string>
+
 #include "cipells/common.h"
 
 namespace fmt {
