@@ -4,60 +4,10 @@
 #include "pybind11/pybind11.h"
 #include "fmt/format.h"
 
-#include "cipells/fwd/XYTuple.h"
+#include "cipells/python/XYTuple.h"
 #include "cipells/fwd/Image.h"
 #include "cipells/utils/Deferrer.h"
 #include "cipells/formatting.h"
-
-namespace pybind11 { namespace detail {
-
-// Custom type caster for tuple->Index2 implicit conversion.
-// Defined in python/XYTuple.cc.
-template <>
-struct type_caster<cipells::Index2> : public type_caster_base<cipells::Index2> {
-    using base = type_caster_base<cipells::Index2>;
-public:
-    bool load(handle src, bool convert);
-};
-
-// Custom type caster for tuple->Real2 implicit conversion.
-// Defined in python/XYTuple.cc.
-template <>
-struct type_caster<cipells::Real2> : public type_caster_base<cipells::Real2> {
-    using base = type_caster_base<cipells::Real2>;
-public:
-    bool load(handle src, bool convert);
-};
-
-#if 0
-
-class PyImage;
-
-// Custom type caster for Images.
-// Defined in python/images.cc.
-template <typename T>
-struct type_caster<cipells::Image<T>> {
-
-    bool load(handle src, bool);
-
-    static handle cast(cipells::Image<T> const * src, return_value_policy policy, handle parent)
-
-    static PYBIND11_DESCR name();
-
-    operator Image<T> * ();
-    operator Image<T> & ();
-    operator Image<T> && () &&;
-
-    ~type_caster();
-
-private:
-    std::unique_ptr<PyImage> _value;
-};
-
-#endif
-
-}} // namespace pybind11::detail
-
 
 namespace cipells {
 

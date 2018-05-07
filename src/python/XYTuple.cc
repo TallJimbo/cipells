@@ -81,17 +81,6 @@ void wrapXYTuple(py::class_<XYTuple<T>, Args...> & cls) {
     pyFormattable(cls);
 }
 
-template <typename T>
-XYTuple<T> * loadFromPyTuple(py::tuple const & t) {
-    if (t.size() != 2u) {
-        PyErr_SetString(PyExc_ValueError, "Only 2-element tuples are interoperable with XYTuple.");
-        throw py::error_already_set();
-    }
-    T x = py::cast<T>(t[0]);
-    T y = py::cast<T>(t[1]);
-    return new XYTuple<T>(x, y);
-}
-
 
 Index pyFloorDiv(Index lhs, Index rhs) {
     Index r = lhs/rhs;
@@ -147,33 +136,3 @@ utils::Deferrer pyXYTuple(py::module & module) {
 }
 
 } // namespace cipells
-
-
-
-namespace pybind11 { namespace detail {
-
-bool type_caster<cipells::Index2>::load(handle src, bool convert) {
-    if (base::load(src, convert)) {
-        return true;
-    }
-    if (py::isinstance<tuple>(src)) {
-        value = cipells::loadFromPyTuple<cipells::Index>(reinterpret_borrow<tuple>(src));
-        return true;
-    }
-    return false;
-}
-
-
-bool type_caster<cipells::Real2>::load(handle src, bool convert) {
-    if (base::load(src, convert)) {
-        return true;
-    }
-    if (py::isinstance<tuple>(src)) {
-        value = cipells::loadFromPyTuple<cipells::Real>(reinterpret_borrow<tuple>(src));
-        return true;
-    }
-    return false;
-}
-
-}} // namespace pybind11::detail
-

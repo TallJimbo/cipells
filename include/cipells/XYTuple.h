@@ -21,6 +21,8 @@ public:
     using Scalar = T;
     using Vector = Vector2<T>;
 
+    XYTuple() : _vector{0, 0} {}
+
     XYTuple(T x, T y) : _vector{x, y} {}
 
     template <typename U>
