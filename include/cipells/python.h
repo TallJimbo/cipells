@@ -5,7 +5,7 @@
 #include "fmt/format.h"
 
 #include "cipells/python/XYTuple.h"
-#include "cipells/fwd/Image.h"
+#include "cipells/python/Image.h"
 #include "cipells/utils/Deferrer.h"
 #include "cipells/formatting.h"
 

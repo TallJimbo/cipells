@@ -7,25 +7,25 @@ namespace cipells {
 namespace {
 
 template <typename T>
-Image<T> passthroughImage(Image<T> const & in) {
+Image<T> passImage(Image<T> const & in) {
     return in;
 }
 
 template <typename T>
-Image<T const> passthroughImageToConst(Image<T> const & in) {
+Image<T const> passImageToConst(Image<T> const & in) {
     return in;
 }
 
 template <typename T>
-Image<T const> passthroughConstImage(Image<T const> const & in) {
+Image<T const> passConstImage(Image<T const> const & in) {
     return in;
 }
 
 template <typename T>
 void wrapImageHelpers(py::module & m) {
-    m.def("passthroughImage", &passthroughImage<T>);
-    m.def("passthroughImageToConst", &passthroughImageToConst<T>);
-    m.def("passthroughConstImage", &passthroughConstImage<T>);
+    m.def("passImage", &passImage<T>);
+    m.def("passImageToConst", &passImageToConst<T>);
+    m.def("passConstImage", &passConstImage<T>);
 }
 
 } // anonymous
