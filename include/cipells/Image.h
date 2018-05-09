@@ -58,6 +58,8 @@ public:
 
     Image<T> copy() const;
 
+    Image<T const> freeze() &&;
+
     IndexBox const & bbox() const { return _bbox; }
 
     Scalar const * data() const { return _data; }

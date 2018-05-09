@@ -38,18 +38,47 @@ template <typename T>
 Image<T const>::Image(Image const &) = default;
 
 template <typename T>
-Image<T const>::Image(Image && other) = default;
+Image<T const>::Image(Image && other) :
+    _data(other._data), _stride(other._stride), _owner(std::move(other._owner)), _bbox(other._bbox)
+{
+    other._data = nullptr;
+    other._stride = 0;
+    other._bbox = IndexBox();
+}
 
 template <typename T>
 Image<T const> & Image<T const>::operator=(Image const & other) = default;
 
 template <typename T>
-Image<T const> & Image<T const>::operator=(Image &&) = default;
+Image<T const> & Image<T const>::operator=(Image && other) {
+    if (&other != this) {
+        _data = other._data;
+        _stride = other._stride;
+        _owner = std::move(other._owner);
+        _bbox = other._bbox;
+        other._data = nullptr;
+        other._stride = 0;
+        other._bbox = IndexBox();
+    }
+    return *this;
+}
 
 template <typename T>
 Image<T> Image<T const>::copy() const {
     Image<T> result(this->bbox());
     result.array() = this->array();
+    return result;
+}
+
+template <typename T>
+Image<T const> Image<T const>::freeze() && {
+    Image<T const> result(std::move(*this));
+    if (result.owner().use_count() > 1) {
+        // n.b. use_count is not reliable when multiple threads have access to
+        // this owner, but that shoudn't matter for our use cases, and the
+        // worst-case scenario for us is an unnecessary copy.
+        result = result.copy();
+    }
     return result;
 }
 

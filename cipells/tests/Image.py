@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from cipells import Image, IndexBox, Index2
-from cipells.tests import passImage, passImageToConst, passConstImage
+from cipells.tests import passImage, passImageToConst, passConstImage, testImageFreeze1, testImageFreeze2
 
 
 class ImageTestCase(unittest.TestCase):
@@ -44,6 +44,8 @@ class ImageTestCase(unittest.TestCase):
             cimage1[point] = 0.0
         with self.assertRaises(ValueError):
             cimage1.array = 0.0
+        self.assertTrue(testImageFreeze1(image))
+        self.assertTrue(testImageFreeze2(image))
         image2 = image.copy()
         # modify the original image, and make sure all views are updated.
         image.array = 1.0
