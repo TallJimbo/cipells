@@ -4,6 +4,7 @@
 #include "Eigen/Core"
 
 #include "cipells/XYTuple.h"
+#include "cipells/Box.h"
 #include "cipells/fwd/transforms.h"
 #include "cipells/formatting.h"
 
@@ -18,6 +19,8 @@ public:
     Identity() {}
 
     Real2 operator()(Real2 const & xy) const { return xy; }
+
+    RealBox operator()(RealBox const & box) const { return box; }
 
     Identity inverted() const { return Identity(); }
 
@@ -52,6 +55,8 @@ public:
 
     Real2 operator()(Real2 const & xy) const { return Real2(xy.vector() + _vector); }
 
+    RealBox operator()(RealBox const & box) const { return box.shiftedBy(Real2(_vector)); }
+
     Translation inverted() const { return Translation(-_vector); }
 
     Translation then(Identity const &) const { return *this; }
@@ -78,6 +83,12 @@ public:
     using Matrix = Matrix2<Real>;
     using Vector = decltype(Vector2<Real>::Zero());
 
+    static Jacobian makeScaling(Real s);
+
+    static Jacobian makeScaling(Real sx, Real sy);
+
+    static Jacobian makeRotation(Real theta);
+
     Jacobian() : _matrix(Matrix::Identity()) {}
 
     Jacobian(Identity const &) : Jacobian() {}
@@ -85,6 +96,8 @@ public:
     explicit Jacobian(Eigen::Ref<Matrix const> const & matrix) : _matrix(matrix) {}
 
     Real2 operator()(Real2 const & xy) const { return Real2(matrix()*xy.vector()); }
+
+    RealBox operator()(RealBox const & box) const;
 
     Jacobian inverted() const;
 
@@ -130,6 +143,8 @@ public:
     Affine(Translation const & translation) : _jacobian(), _translation(translation) {}
 
     Real2 operator()(Real2 const & xy) const { return _translation(_jacobian(xy)); }
+
+    RealBox operator()(RealBox const & box) const;
 
     Affine inverted() const;
 

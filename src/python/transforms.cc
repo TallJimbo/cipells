@@ -3,6 +3,7 @@
 
 #include "cipells/python.h"
 #include "cipells/transforms.h"
+#include "cipells/Box.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -14,7 +15,8 @@ namespace {
 template <typename T, typename ...Args>
 void wrapTransform(py::class_<T, Args...> & cls) {
     cls.def(py::init<>());
-    cls.def("__call__", &T::operator());
+    cls.def("__call__", py::overload_cast<Real2 const &>(&T::operator(), py::const_));
+    cls.def("__call__", py::overload_cast<RealBox const &>(&T::operator(), py::const_));
     cls.def("inverted", &T::inverted);
     cls.def("then", py::overload_cast<Identity const &>(&T::then, py::const_));
     cls.def("then", py::overload_cast<Translation const &>(&T::then, py::const_));

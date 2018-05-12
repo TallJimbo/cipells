@@ -2,7 +2,9 @@ import unittest
 import itertools
 import numpy as np
 
-from cipells import Real, Real2, Identity, Translation, Jacobian, Affine
+from cipells import Real, Real2, Identity, Translation, Jacobian, Affine, RealBox
+
+from .Box import TestBoxes
 
 
 class TestTransforms:
@@ -124,6 +126,18 @@ class TransformTestCase(unittest.TestCase):
         transforms = TestTransforms(np.random)
         for t in transforms.all:
             self.assertTransformsClose(eval(repr(t)), t)
+
+    def testBoxes(self):
+        points = [Real(-1.5), Real(5.0), Real(6.75), Real(8.625)]
+        transforms = TestTransforms(np.random)
+        boxes = TestBoxes(RealBox, points, n=3)
+        for t in transforms.all:
+            for b in boxes.finite:
+                b2 = t(b)
+                for p in b.corners:
+                    p2 = t(p)
+                    self.assertTrue(b2.contains(p2))
+
 
 if __name__ == "__main__":
     unittest.main()

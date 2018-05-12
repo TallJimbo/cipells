@@ -7,6 +7,17 @@
 
 namespace cipells {
 
+namespace {
+
+template <typename Transform>
+RealBox transformBox(Transform const & transform, RealBox const & box) {
+    auto corners = box.corners();
+    std::transform(corners.begin(), corners.end(), corners.begin(), transform);
+    return RealBox::makeHull(corners);
+}
+
+} // anonymous
+
 void Identity::format(detail::Writer & writer, detail::FormatSpec const & spec) const {
     writer.write("Identity()");
 }
@@ -25,6 +36,27 @@ void Translation::format(detail::Writer & writer, detail::FormatSpec const & spe
         detail::formatScalar(_vector[0]),
         detail::formatScalar(_vector[1])
     );
+}
+
+RealBox Jacobian::operator()(RealBox const & box) const {
+    return transformBox(*this, box);
+}
+
+Jacobian Jacobian::makeScaling(Real s) {
+    return Jacobian(Matrix::Identity()*s);
+}
+
+Jacobian Jacobian::makeScaling(Real sx, Real sy) {
+    return Jacobian(Matrix(Affine::Vector(sx, sy).asDiagonal()));
+}
+
+Jacobian Jacobian::makeRotation(Real theta) {
+    Real c = std::cos(theta);
+    Real s = std::sin(theta);
+    Matrix m;
+    m << c, -s,
+         s,  c;
+    return Jacobian(std::move(m));
 }
 
 Jacobian Jacobian::inverted() const {
@@ -55,6 +87,10 @@ void Jacobian::format(detail::Writer & writer, detail::FormatSpec const & spec) 
         detail::formatScalar(_matrix(1, 0)),
         detail::formatScalar(_matrix(1, 1))
     );
+}
+
+RealBox Affine::operator()(RealBox const & box) const {
+    return transformBox(*this, box);
 }
 
 Affine Affine::inverted() const {
