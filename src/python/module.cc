@@ -6,4 +6,5 @@ PYBIND11_MODULE(_cipells, m) {
     auto pyBox = cipells::pyBox(m);
     auto pyTransforms = cipells::pyTransforms(m);
     auto pyImage = cipells::pyImage(m);
+    auto pyInterpolant = cipells::pyInterpolant(m);
 }
