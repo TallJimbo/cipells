@@ -132,6 +132,19 @@ public:
 
 };
 
+
+template <typename T, typename Func>
+void apply(Image<T> const & image, Func func) {
+    T * row = image.data();
+    for (Index y = image.bbox().y().min(); y <= image.bbox().y().max(); ++y, row += image.stride()) {
+        T * pixel = row;
+        for (Index2 index(image.bbox().x().min(), y); index.x() <= image.bbox().x().max(); ++index.x(), ++pixel) {
+            func(index, *pixel);
+        }
+    }
+}
+
+
 } // namespace cipells
 
 #endif // !CIPELLS_Image_h_INCLUDED
