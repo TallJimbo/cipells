@@ -11,6 +11,7 @@ add_library(cipells
     src/Interval.cc
     src/Box.cc
     src/transforms.cc
+    src/profiles.cc
     src/Image.cc
     src/Interpolant.cc
     src/Kernel.cc
