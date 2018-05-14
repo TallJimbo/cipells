@@ -32,6 +32,6 @@ IndexInterval.arange = lambda self, dtype=Index: np.arange(self.min, self.max + 
 RealBox.Scalar = Real
 RealBox.Interval = RealInterval
 IndexBox.Scalar = Index
-IndexBox.slice = property(lambda self: (self.y.slice, self.x.slice))
 IndexBox.Interval = IndexInterval
-
+IndexBox.slice = property(lambda self: (self.y.slice, self.x.slice))
+IndexBox.meshgrid = lambda self, dtype=Index: np.meshgrid(self.x.arange(dtype), self.y.arange(dtype))
