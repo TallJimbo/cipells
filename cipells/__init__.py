@@ -5,6 +5,7 @@ from ._cipells import (
     Identity, Translation, Jacobian, Affine,
     Image,
     Interpolant,
+    Kernel
 )
 import numpy as np
 
@@ -14,6 +15,7 @@ __all__ = ("Real", "Real2", "Index", "Index2",
            "Identity", "Translation", "Jacobian", "Affine",
            "Image",
            "Interpolant",
+           "Kernel",
            )
 
 Real = np.float64
