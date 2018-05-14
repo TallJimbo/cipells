@@ -59,6 +59,7 @@ pybind11_add_module(_cipells
     src/python/transforms.cc
     src/python/Image.cc
     src/python/Interpolant.cc
+    src/python/Kernel.cc
 )
 target_include_directories(_cipells
     PUBLIC

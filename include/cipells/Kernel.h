@@ -4,6 +4,7 @@
 #include "cipells/Image.h"
 #include "cipells/transforms.h"
 #include "cipells/Interpolant.h"
+#include "cipells/Kernel.h"
 
 namespace cipells {
 
@@ -19,6 +20,8 @@ public:
     Image<float const> const & image() const { return _image; }
 
     Index upsampling() const { return _upsampling; }
+
+    std::shared_ptr<Interpolant const> interpolant() const { return _interpolant; }
 
     Kernel resample(Index upsampling, std::shared_ptr<Interpolant const> interpolant=nullptr) const;
 

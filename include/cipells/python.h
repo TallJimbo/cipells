@@ -44,6 +44,8 @@ utils::Deferrer pyImage(pybind11::module & module);
 
 utils::Deferrer pyInterpolant(pybind11::module & module);
 
+utils::Deferrer pyKernel(pybind11::module & module);
+
 } // namespace cipells
 
 #endif // !CIPELLS_python_h_INCLUDED
