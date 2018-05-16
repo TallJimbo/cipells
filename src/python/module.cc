@@ -8,4 +8,5 @@ PYBIND11_MODULE(_cipells, m) {
     auto pyImage = cipells::pyImage(m);
     auto pyInterpolant = cipells::pyInterpolant(m);
     auto pyKernel = cipells::pyKernel(m);
+    auto pyProfiles = cipells::pyProfiles(m);
 }
