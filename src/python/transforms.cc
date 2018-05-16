@@ -55,6 +55,7 @@ utils::Deferrer pyTransforms(pybind11::module & module) {
             cls.def(py::init<Real2 const &>());
             cls.def(py::init<Eigen::Ref<Vector2<Real> const> const &>());
             wrapTransform(cls);
+            py::implicitly_convertible<Identity, Translation>();
         }
     );
     helper.add(
@@ -63,6 +64,7 @@ utils::Deferrer pyTransforms(pybind11::module & module) {
             cls.def(py::init<Identity const &>());
             cls.def(py::init<Eigen::Ref<Matrix2<Real> const> const &>());
             wrapTransform(cls);
+            py::implicitly_convertible<Identity, Jacobian>();
         }
     );
     helper.add(
@@ -76,6 +78,9 @@ utils::Deferrer pyTransforms(pybind11::module & module) {
             cls.def_property_readonly("translation", &Affine::translation, py::return_value_policy::copy);
             cls.def_property_readonly("jacobian", &Affine::jacobian, py::return_value_policy::copy);
             wrapTransform(cls);
+            py::implicitly_convertible<Translation, Affine>();
+            py::implicitly_convertible<Jacobian, Affine>();
+            py::implicitly_convertible<Identity, Affine>();
         }
     );
     return helper;

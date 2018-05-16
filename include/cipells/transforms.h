@@ -125,6 +125,12 @@ public:
     using Matrix = Jacobian::Matrix;
     using Vector = Translation::Vector;
 
+    static Affine makeScaling(Real s);
+
+    static Affine makeScaling(Real sx, Real sy);
+
+    static Affine makeRotation(Real theta);
+
     Affine() : _jacobian(), _translation() {}
 
     Affine(Identity const &) : Affine() {}
