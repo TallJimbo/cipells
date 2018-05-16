@@ -15,6 +15,7 @@ add_library(cipells
     src/Image.cc
     src/Interpolant.cc
     src/Kernel.cc
+    src/profiles.cc
 )
 target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
 target_include_directories(cipells
@@ -60,6 +61,7 @@ pybind11_add_module(_cipells
     src/python/Image.cc
     src/python/Interpolant.cc
     src/python/Kernel.cc
+    src/python/profiles.cc
 )
 target_include_directories(_cipells
     PUBLIC

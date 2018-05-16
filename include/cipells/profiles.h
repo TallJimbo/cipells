@@ -14,6 +14,8 @@ public:
 
     double operator()(Real2 const & xy) const;
 
+    double operator()(Real x, Real y) const { return (*this)(Real2(x, y)); }
+
     Gaussian transformedBy(Affine const & t) const;
 
     void addTo(Image<float> & image) const;

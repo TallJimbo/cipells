@@ -15,13 +15,10 @@ utils::Deferrer pyProfiles(py::module & module) {
         py::class_<Gaussian>(module, "Gaussian"),
         [](auto & cls) {
             cls.def(py::init<Affine const &, Real>(), "transform"_a, "flux"_a=1);
+            cls.def("__call__", py::overload_cast<Real2 const &>(&Gaussian::operator(), py::const_));
             cls.def(
                 "__call__",
-                py::vectorize(
-                    [](Gaussian const & self, Real x, Real y) {
-                        return self(Real2(x, y));
-                    }
-                ),
+                py::vectorize(py::overload_cast<Real, Real>(&Gaussian::operator(), py::const_)),
                 "x"_a, "y"_a
             );
             cls.def(
