@@ -3,7 +3,7 @@
 #include "fmt/format.h"
 
 #include "cipells/Image.h"
-
+#include "cipells/transforms.h"
 
 namespace py = pybind11;
 
@@ -73,10 +73,17 @@ void wrapImageHelpers(py::module & m) {
     m.def("testImageFreeze2", &testImageFreeze2<T>);
 }
 
+bool acceptJacobian(Jacobian const & jacobian) { return true; }
+bool acceptTranslation(Translation const & translation) { return true; }
+bool acceptAffine(Affine const & affine) { return true; }
+
 } // anonymous
 } // namespace cipells
 
 PYBIND11_MODULE(_tests, m) {
     cipells::wrapImageHelpers<float>(m);
     cipells::wrapImageHelpers<std::complex<float>>(m);
+    m.def("acceptJacobian", &cipells::acceptJacobian);
+    m.def("acceptTranslation", &cipells::acceptTranslation);
+    m.def("acceptAffine", &cipells::acceptAffine);
 }

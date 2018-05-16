@@ -4,6 +4,7 @@ import numpy as np
 
 from cipells import Real, Real2, Identity, Translation, Jacobian, Affine, RealBox
 
+from cipells.tests import acceptJacobian, acceptTranslation, acceptAffine
 from .Box import TestBoxes
 
 
@@ -137,6 +138,16 @@ class TransformTestCase(unittest.TestCase):
                 for p in b.corners:
                     p2 = t(p)
                     self.assertTrue(b2.contains(p2))
+
+    def testImplicitConversion(self):
+        transforms = TestTransforms(np.random)
+        self.assertTrue(acceptJacobian(Identity()))
+        self.assertTrue(acceptTranslation(Identity()))
+        self.assertTrue(acceptAffine(Identity()))
+        for jacobian in transforms.jacobians:
+            self.assertTrue(acceptAffine(jacobian))
+        for translation in transforms.translations:
+            self.assertTrue(acceptAffine(translation))
 
 
 if __name__ == "__main__":
