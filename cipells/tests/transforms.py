@@ -139,6 +139,28 @@ class TransformTestCase(unittest.TestCase):
                     p2 = t(p)
                     self.assertTrue(b2.contains(p2))
 
+    def testVectorized(self):
+        transforms = TestTransforms(np.random)
+        shapes = [(5, 3), (3,), ()]
+        for x_shape in shapes:
+            for y_shape in shapes:
+                for t in transforms.all:
+                    x_in = np.random.randn(*x_shape)
+                    y_in = np.random.randn(*y_shape)
+                    x_out, y_out = t(x=x_in, y=y_in)
+                    if len(x_shape) == 0 and len(y_shape) == 0:
+                        xy_check = t(x_in, y_in)
+                        self.assertEqual(xy_check, (x_out, y_out))
+                    else:
+                        b = np.broadcast(x_in, y_in)
+                        self.assertEqual(x_out.shape, b.shape)
+                        self.assertEqual(y_out.shape, b.shape)
+                        x_check = np.zeros(b.shape, dtype=Real)
+                        y_check = np.zeros(b.shape, dtype=Real)
+                        x_check.flat, y_check.flat = zip(*[t(x, y) for x, y in b])
+                        np.testing.assert_array_equal(x_check, x_out)
+                        np.testing.assert_array_equal(y_check, y_out)
+
     def testImplicitConversion(self):
         transforms = TestTransforms(np.random)
         self.assertTrue(acceptJacobian(Identity()))
