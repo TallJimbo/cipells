@@ -1,4 +1,5 @@
 #include "pybind11/pybind11.h"
+#include "pybind11/numpy.h"
 #include "pybind11/eigen.h"
 
 #include "cipells/python.h"
@@ -17,6 +18,38 @@ void wrapTransform(py::class_<T, Args...> & cls) {
     cls.def(py::init<>());
     cls.def("__call__", py::overload_cast<Real2 const &>(&T::operator(), py::const_));
     cls.def("__call__", py::overload_cast<RealBox const &>(&T::operator(), py::const_));
+    cls.def(
+        "__call__",
+        [](T const & self, Real x, Real y) { return self(Real2(x, y)); },
+        "x"_a, "y"_a
+    );
+    cls.def(
+        "__call__",
+        [](T const & self, py::array_t<Real> x, py::array_t<Real> y) {
+            ssize_t nd = 0;
+            std::vector<ssize_t> shape(0);
+            std::array<py::buffer_info, 2> buffers({x.request(), y.request()});
+            py::detail::broadcast(buffers, nd, shape);
+            py::array_t<Real> x_result = py::array_t<Real>(shape);
+            py::array_t<Real> y_result = py::array_t<Real>(shape);
+            py::buffer_info x_out = x_result.request(true);
+            py::buffer_info y_out = y_result.request(true);
+            py::detail::multi_array_iterator<2> input_iter(buffers, shape);
+            py::detail::array_iterator<Real> const x_end = py::detail::array_end<Real>(x_out);
+            for (
+                 py::detail::array_iterator<Real> x_iter = py::detail::array_begin<Real>(x_out),
+                                                  y_iter = py::detail::array_begin<Real>(y_out);
+                 x_iter != x_end;
+                 ++x_iter, ++y_iter, ++input_iter
+            ) {
+                Real2 xy = self(Real2(*input_iter.data<0, Real>(), *input_iter.data<1, Real>()));
+                *x_iter = xy.x();
+                *y_iter = xy.y();
+            }
+            return std::make_pair(x_result, y_result);
+        },
+        "x"_a, "y"_a
+    );
     cls.def("inverted", &T::inverted);
     cls.def("then", py::overload_cast<Identity const &>(&T::then, py::const_));
     cls.def("then", py::overload_cast<Translation const &>(&T::then, py::const_));
