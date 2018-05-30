@@ -16,6 +16,7 @@ add_library(cipells
     src/Interpolant.cc
     src/Kernel.cc
     src/profiles.cc
+    src/BitSet.cc
 )
 target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
 target_include_directories(cipells
