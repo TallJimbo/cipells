@@ -10,16 +10,12 @@ namespace cipells {
 
 namespace detail {
 
-constexpr ChunkIndex BITS_PER_CHUNK = sizeof(Chunk)*8u;
-
-constexpr Chunk TOP_CHUNK_MASK = Chunk(1u) << (BITS_PER_CHUNK - 1u);
+Chunk BitSetAccess::upper_chunk_mask(std::size_t nbits) {
+    return (nbits%BITS_PER_CHUNK) & FULL_CHUNK_MASK;
+}
 
 ChunkIndex BitSetAccess::count_chunks(std::size_t nbits) {
     return nbits/BITS_PER_CHUNK + (nbits%BITS_PER_CHUNK != 0u);
-}
-
-BitKey BitSetAccess::first(std::shared_ptr<BitSchema const> schema) {
-    return BitKey(0u, 0u, std::move(schema));
 }
 
 BitKey BitSetAccess::next(BitKey const & current) {
@@ -37,7 +33,7 @@ BitKey BitSetAccess::next(BitKey const & current) {
 
 
 bool BitKey::operator==(BitKey const & rhs) const {
-    return _index == rhs._index && _mask == rhs._mask && schema() == rhs.schema();
+    return _index == rhs._index && _mask == rhs._mask;
 }
 
 bool BitKey::operator<(BitKey const & rhs) const {
@@ -59,16 +55,20 @@ bool BitKey::operator<=(BitKey const & rhs) const {
 }
 
 BitKey::BitKey() :
-    _mask(0u), _index(0u), _schema()
+    _mask(0u), _index(0u)
 {}
 
-BitKey::BitKey(detail::Chunk mask, detail::ChunkIndex index, std::shared_ptr<BitSchema const> schema) :
-    _mask(mask), _index(index), _schema(std::move(schema))
+BitKey::BitKey(detail::Chunk mask, detail::ChunkIndex index) :
+    _mask(mask), _index(index)
 {}
 
 
-std::shared_ptr<BitSchema> BitSchema::make(std::size_t max_size) {
-    return std::shared_ptr<BitSchema>(new BitSchema(max_size));
+BitSchema::BitSchema(std::size_t max_size) :
+    _items(),
+    _n_chunks(detail::BitSetAccess::count_chunks(max_size))
+{
+    assert(this->max_size() >= max_size);  // We should have rounded up to the nearest full chunk.
+    _items.reserve(this->max_size());
 }
 
 bool BitSchema::operator==(BitSchema const & rhs) const {
@@ -81,11 +81,13 @@ bool BitSchema::operator==(BitSchema const & rhs) const {
 std::size_t BitSchema::max_size() const { return _n_chunks*detail::BITS_PER_CHUNK; }
 
 BitSchema::const_iterator BitSchema::find(std::string const & name) const {
-    return std::find_if(begin(), end(), [&name](Item const & item) { return item.name == name; });
+    return std::find_if(begin(), end(),
+                        [&name](Item const & item) { return item.name == name; });
 }
 
 BitSchema::const_iterator BitSchema::find(BitKey const & key) const {
-    return std::lower_bound(begin(), end(), key, [](Item const & a, BitKey const & b) { return a.key < b; });
+    return std::lower_bound(begin(), end(), key,
+                            [](Item const & a, BitKey const & b) { return a.key < b; });
 }
 
 BitSchema::Item const & BitSchema::operator[](std::string const & name) const {
@@ -104,15 +106,7 @@ BitSchema::Item const & BitSchema::operator[](BitKey const & key) const {
     return *i;
 }
 
-BitSchema::BitSchema(std::size_t max_size) :
-    _items(),
-    _n_chunks(detail::BitSetAccess::count_chunks(max_size))
-{
-    assert(this->max_size() >= max_size);  // We should have rounded up to the nearest full chunk.
-    _items.reserve(this->max_size());
-}
-
-std::shared_ptr<BitSchema> BitSchema::copy(std::size_t max_size) const {
+BitSchema BitSchema::copy(std::size_t max_size) const {
     if (max_size == 0u) {
         max_size = this->max_size();
     }
@@ -120,8 +114,8 @@ std::shared_ptr<BitSchema> BitSchema::copy(std::size_t max_size) const {
         throw std::length_error(fmt::format("New max_size {:d} is less than current size {:d}.",
                                             max_size, this->size()));
     }
-    auto r = make(max_size);
-    r->_items.insert(r->_items.begin(), this->begin(), this->end());
+    BitSchema r (max_size);
+    r._items.insert(r->_items.begin(), this->begin(), this->end());
     return r;
 }
 

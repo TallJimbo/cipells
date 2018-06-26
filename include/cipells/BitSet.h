@@ -14,8 +14,6 @@ public:
 
     BitKey();
 
-    std::shared_ptr<BitSchema const> schema() const { return _schema.lock(); }
-
     bool operator==(BitKey const & rhs) const;
     bool operator!=(BitKey const & rhs) const { return !(*this == rhs); }
 
@@ -30,23 +28,31 @@ private:
     friend class detail::BitSetAccess;
     friend class SingleIndexBitSet;
 
-    BitKey(detail::Chunk mask, detail::ChunkIndex index, std::shared_ptr<BitSchema const> schema);
+    BitKey(detail::Chunk mask, detail::ChunkIndex index, detail::ChunkIndex n_chunks);
 
     detail::Chunk _mask;
     detail::ChunkIndex _index;
-    std::weak_ptr<BitSchema const> _schema;
 };
 
 
 namespace detail {
 
+constexpr ChunkIndex BITS_PER_CHUNK = sizeof(Chunk)*8u;
+constexpr Chunk TOP_CHUNK_MASK = Chunk(1u) << (BITS_PER_CHUNK - 1u);
+constexpr Chunk FULL_CHUNK_MASK = Chunk(0xFF);
+
 struct BitSetAccess {
+
+    static Chunk upper_chunk_mask(std::size_t nbits);
 
     static ChunkIndex count_chunks(std::size_t nbits);
 
-    static BitKey first(std::shared_ptr<BitSchema const> schema);
-
     static BitKey next(BitKey const & current);
+
+    template <typename Derived>
+    static ChunkIndex n_chunks(BitSetBase<Derived> const & bs) {
+        return static_cast<Derived const &>(bs)._n_chunks();
+    }
 
     template <typename Derived>
     static Chunk get_chunk(BitSetBase<Derived> const & bs, ChunkIndex i) {
@@ -60,8 +66,8 @@ struct BitSetAccess {
 
     template <typename L, typename R, typename F>
     static L & assign(BitSetMutableBase<L> & lhs, BitSetBase<R> const & rhs, F func) {
-        assert(*lhs.schema() == *rhs.schema());
-        ChunkIndex const n = lhs.schema()->_n_chunks;
+        assert(lhs.size() == rhs.size());
+        ChunkIndex const n = n_chunks(lhs);
         for (ChunkIndex i = 0; i < n; ++i) {
             func(get_chunk_ref(lhs, i), get_chunk(rhs, i));
         }
@@ -78,7 +84,7 @@ struct BitSetAccess {
 } // namespace detail
 
 
-class BitSchema : public std::enable_shared_from_this<BitSchema> {
+class BitSchema {
 public:
 
     struct Item {
@@ -89,7 +95,7 @@ public:
 
     using const_iterator = std::vector<Item>::const_iterator;
 
-    static std::shared_ptr<BitSchema> make(std::size_t max_size);
+    BitSchema(std::size_t max_size);
 
     const_iterator begin() const { return _items.begin(); }
     const_iterator end() const { return _items.end(); }
@@ -109,9 +115,9 @@ public:
     Item const & operator[](std::string const & name) const;
     Item const & operator[](BitKey const & index) const;
 
-    std::shared_ptr<BitSchema> copy(std::size_t max_size=0) const;
+    BitSchema copy(std::size_t max_size=0) const;
 
-    std::shared_ptr<BitSchema> compressed() const { return copy(this->size()); }
+    BitSchema compressed() const { return copy(this->size()); }
 
     BitKey const & append(std::string const & name, std::string const & description);
 
@@ -120,8 +126,6 @@ public:
 private:
 
     friend class detail::BitSetAccess;
-
-    explicit BitSchema(std::size_t max_size);
 
     std::vector<Item> _items;
     detail::ChunkIndex const _n_chunks;
@@ -133,15 +137,40 @@ class BitSetBase {
 public:
 
     bool operator[](BitKey const & index) const {
-        assert(*index.schema() == *schema());
         return detail::BitSetAccess::get_bit(*this, index);
     }
 
-    std::shared_ptr<BitSchema const> schema() const {
-        return static_cast<Derived const &>(*this).schema();
+    bool any() const {
+        ChunkIndex const n = n_chunks(lhs) - 1;
+        for (ChunkIndex i = 0; i < n; ++i) {
+            if (detail::BitSetAccess::get_chunk(i)) {
+                return true;
+            }
+        }
+        if (detail::BitSetAccess::get_chunk(i) & detail::BitSetAccess::upper_chunk_mask(_size)) {
+            return true;
+        }
+        return false;
     }
 
-    std::size_t size() const { return schema().size(); }
+    bool all() const {
+        ChunkIndex const n = n_chunks(lhs) - 1;
+        for (ChunkIndex i = 0; i < n; ++i) {
+            if (detail::BitSetAccess::get_chunk(i) != detail::FULL_CHUNK_MASK) {
+                return false;
+            }
+        }
+        if (detail::BitSetAccess::get_chunk(i) != detail::BitSetAccess::upper_chunk_mask(_size)) {
+            return false;
+        }
+        return true;
+    }
+
+    bool none() const { return !any(); }
+
+    std::size_t size() const { return static_cast<Derived const &>(*this); }
+
+    std::size_t max_size() const { return detail::BitSetAccess::n_chunks(*this)*BITS_PER_CHUNK; }
 
     BitSetNotExpression<Derived> operator~() const {
         return BitSetNotExpression<Derived>(*this);
@@ -198,7 +227,7 @@ public:
 
     explicit BitSetUnaryExpression(E arg, F func=F()) : F(func), _arg(std::move(arg)) {}
 
-    std::shared_ptr<BitSchema const> schema() const { return _arg.schema(); }
+    std::size_t size() const { return _arg.size(); }
 
 private:
 
@@ -206,6 +235,10 @@ private:
 
     detail::Chunk _get_chunk(detail::ChunkIndex i) const {
         return F::operator()(detail::BitSetAccess::get_chunk(_arg, i));
+    }
+
+    detail::ChunkSize _n_chunks() const {
+        return detail::BitSetAccess::n_chunks(_arg);
     }
 
     E _arg;
@@ -217,10 +250,10 @@ class BitSetBinaryExpression : public BitSetBase<BitSetBinaryExpression<L, R, F>
 public:
 
     BitSetBinaryExpression(L lhs, R rhs, F func=F()) : F(func), _lhs(std::move(lhs)), _rhs(std::move(rhs)) {
-        assert(*_lhs.schema() == *_rhs.schema());
+        assert(_lhs.size() == _rhs.size());
     }
 
-    std::shared_ptr<BitSchema const> schema() const { return _lhs.schema(); }
+    std::size_t size() const { return _lhs.size(); }
 
 private:
 
@@ -231,6 +264,10 @@ private:
                              detail::BitSetAccess::get_chunk(_rhs, i));
     }
 
+    detail::ChunkSize _n_chunks() const {
+        return detail::BitSetAccess::n_chunks(_lhs);
+    }
+
     L _lhs;
     R _rhs;
 };
@@ -239,7 +276,9 @@ private:
 class SingleIndexBitSet : public BitSetBase<SingleIndexBitSet> {
 public:
 
-    std::shared_ptr<BitSchema const> schema() const { return _key.schema(); }
+    explicit SingleIndexBitSet(BitKey const & key, detail::ChunkSize n_chunks, std::size_t size);
+
+    std::size_t size() const { return _size; }
 
 private:
 
@@ -249,23 +288,27 @@ private:
         return (i == _key._index) ? _key._mask : detail::Chunk(0u);
     }
 
+    detail::ChunkSize _n_chunks() const { return _chunk_count; }
+
     BitKey _key;
+    detail::ChunkSize _chunk_count;
+    std::size_t _size;
 };
 
 
 class BitSet : public BitSetMutableBase<BitSet> {
 public:
 
-    explicit BitSet(std::shared_ptr<BitSchema const> schema);
-
-    using BitSetMutableBase<BitSet>::operator=;
+    explicit BitSet(std::size_t max_size);
 
     template <typename Derived>
-    BitSet(BitSetBase<Derived> const & other) : BitSet(other.schema()) {
+    BitSet(BitSetBase<Derived> const & other) : BitSet(other.max_size()) {
         *this = other;
     }
 
-    std::shared_ptr<BitSchema const> schema() const { return _schema; }
+    using BitSetMutableBase<BitSet>::operator=;
+
+    std::size_t size() const { return _size; }
 
 private:
 
@@ -273,9 +316,10 @@ private:
 
     detail::Chunk _get_chunk(detail::ChunkIndex i) const { return _chunks[i]; }
     detail::Chunk & _get_chunk_ref(detail::ChunkIndex i) { return _chunks[i]; }
+    detail::ChunkSize _n_chunks() const { return _chunks.size(); }
 
+    std::size_t _size;
     std::vector<detail::Chunk> _chunks;
-    std::shared_ptr<BitSchema const> _schema;
 };
 
 
