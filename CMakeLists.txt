@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(cipells VERSION 0.0.1 LANGUAGES CXX)
 
-add_subdirectory(external/pybind11)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(pybind11 2.2 REQUIRED NO_MODULE)
 add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
 
 add_library(cipells
@@ -17,19 +18,25 @@ add_library(cipells
     src/Kernel.cc
     src/profiles.cc
 )
-target_link_libraries(cipells PRIVATE fmt::fmt-header-only)
 target_include_directories(cipells
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:external/eigen>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/eigen>
+    INTERFACE
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 set_target_properties(cipells
     PROPERTIES
         CXX_STANDARD 14
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
+)
+target_link_libraries(cipells
+    PUBLIC
+        Eigen3::Eigen
+    PRIVATE
+        fmt::fmt-header-only
 )
 
 function(cipells_add_python MODULE_NAME)
@@ -44,13 +51,12 @@ target_include_directories(continuous1d
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/external/eigen
 )
 set_target_properties(continuous1d
     PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY cipells/experiments
 )
+target_link_libraries(continuous1d PRIVATE Eigen3::Eigen)
 
 pybind11_add_module(_cipells
     src/python/module.cc
