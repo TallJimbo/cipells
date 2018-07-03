@@ -3,7 +3,7 @@ project(cipells VERSION 0.0.1 LANGUAGES CXX)
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(pybind11 2.2 REQUIRED NO_MODULE)
-add_subdirectory(external/fmt EXCLUDE_FROM_ALL)
+find_package(fmt 4.1 REQUIRED NO_MODULE)
 
 add_library(cipells
     SHARED
@@ -36,7 +36,7 @@ target_link_libraries(cipells
     PUBLIC
         Eigen3::Eigen
     PRIVATE
-        fmt::fmt-header-only
+        fmt::fmt
 )
 
 function(cipells_add_python MODULE_NAME)
@@ -81,7 +81,7 @@ set_target_properties(_cipells
 target_link_libraries(_cipells
     PRIVATE
         cipells
-        fmt::fmt-header-only
+        fmt::fmt
 )
 
 
@@ -100,7 +100,7 @@ set_target_properties(_tests
 target_link_libraries(_tests
     PRIVATE
         cipells
-        fmt::fmt-header-only
+        fmt::fmt
 )
 
 
