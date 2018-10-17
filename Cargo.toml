@@ -1,0 +1,6 @@
+[package]
+name = "cipells"
+version = "0.1.0"
+authors = ["Jim Bosch <jbosch@astro.princeton.edu>"]
+
+[dependencies]
