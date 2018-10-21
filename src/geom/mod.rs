@@ -1,3 +1,6 @@
-mod intervals;
+mod interval;
 
-pub use self::intervals::RealInterval;
+pub use self::interval::{Interval, RealInterval, IndexInterval, RealToIndexError};
+
+#[cfg(test)]
+pub use self::interval::test_utils;

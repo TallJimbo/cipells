@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["Jim Bosch <jbosch@astro.princeton.edu>"]
 
 [dependencies]
+num = "0.2.0"
+rand = "0.5.0"
+try_from = "0.2.0"
