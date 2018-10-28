@@ -1,12 +1,12 @@
-use std::i32;
+use std::cmp::Ordering;
 use std::error::Error;
 use std::fmt;
-use std::cmp::Ordering;
+use std::i32;
 use std::ops::Range;
 
 use try_from::TryFrom;
 
-use super::{Scalar, Real, Index};
+use super::{Index, Real, Scalar};
 
 mod abstract_;
 pub use self::abstract_::AbstractInterval;
@@ -17,20 +17,16 @@ pub mod test_utils;
 #[cfg(test)]
 mod tests;
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Interval<T: Scalar> {
     min: T,
     max: T,
 }
 
-
 pub type RealInterval = Interval<Real>;
 pub type IndexInterval = Interval<Index>;
 
-
 impl<T: Scalar> Interval<T> {
-
     pub fn new<I: AbstractInterval<T>>(other: I) -> Self {
         let (min, max) = other.to_min_max_tuple();
         if is_empty_interval(min, max) {
@@ -49,8 +45,9 @@ impl<T: Scalar> Interval<T> {
     }
 
     pub fn hull<I>(iter: I) -> Self
-        where I: IntoIterator,
-              I::Item: AbstractInterval<T>
+    where
+        I: IntoIterator,
+        I::Item: AbstractInterval<T>,
     {
         let mut result: Self = Default::default();
         for x in iter {
@@ -59,7 +56,9 @@ impl<T: Scalar> Interval<T> {
         result
     }
 
-    pub fn is_empty(&self) -> bool { is_empty_interval(self.min, self.max) }
+    pub fn is_empty(&self) -> bool {
+        is_empty_interval(self.min, self.max)
+    }
 
     pub fn min(&self) -> Option<T> {
         if self.is_empty() {
@@ -106,7 +105,10 @@ impl<T: Scalar> Interval<T> {
     }
 
     pub fn shifted_by(&self, x: T) -> Self {
-        Self { min: self.min + x, max: self.max + x }
+        Self {
+            min: self.min + x,
+            max: self.max + x,
+        }
     }
 
     pub fn clipped_to<I: AbstractInterval<T>>(&self, other: I) -> Self {
@@ -129,7 +131,10 @@ impl<T: Scalar> Interval<T> {
         } else if self.is_empty() {
             Self::new(min..=max)
         } else {
-            Self { min: self.min.min(min), max: self.max.max(max) }
+            Self {
+                min: self.min.min(min),
+                max: self.max.max(max),
+            }
         }
     }
 
@@ -144,22 +149,20 @@ impl<T: Scalar> Interval<T> {
     pub fn eroded_by(self, x: T) -> Self {
         self.dilated_by(-x)
     }
-
 }
 
 impl Interval<Real> {
-
     pub fn with_center_and_size(center: Real, size: Real) -> Self {
-        let min = center - 0.5*size;
+        let min = center - 0.5 * size;
         Self::new(min..=min + size)
     }
 
-    pub fn center(&self) -> Real { 0.5*(self.min + self.max) }
-
+    pub fn center(&self) -> Real {
+        0.5 * (self.min + self.max)
+    }
 }
 
 impl Interval<Index> {
-
     pub fn to_range_with_origin(&self, x0: Index) -> Range<usize> {
         if self.is_empty() {
             0..0
@@ -169,7 +172,6 @@ impl Interval<Index> {
             (start as usize)..(end as usize)
         }
     }
-
 }
 
 impl<T: Scalar> PartialEq for Interval<T> {
@@ -199,10 +201,14 @@ impl<T: Scalar> PartialOrd for Interval<T> {
 }
 
 impl<T> Default for Interval<T>
-    where T: Scalar
+where
+    T: Scalar,
 {
     fn default() -> Self {
-        Self { min: T::empty_interval_min(), max: T::empty_interval_max() }
+        Self {
+            min: T::empty_interval_min(),
+            max: T::empty_interval_max(),
+        }
     }
 }
 
@@ -218,7 +224,6 @@ impl<'a> From<&'a Interval<Index>> for Interval<Real> {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct RealToIndexError {
     from: RealInterval,
@@ -226,19 +231,24 @@ pub struct RealToIndexError {
 
 impl fmt::Display for RealToIndexError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "RealInterval {} cannot be converted to an IndexInterval.", self.from)
+        write!(
+            f,
+            "RealInterval {} cannot be converted to an IndexInterval.",
+            self.from
+        )
     }
 }
 
 impl Error for RealToIndexError {}
-
 
 impl<'a> TryFrom<&'a Interval<Real>> for Interval<Index> {
     type Err = RealToIndexError;
     fn try_from(value: &'a Interval<Real>) -> Result<Self, Self::Err> {
         if let (Some(min), Some(max)) = (value.min(), value.max()) {
             if min < (i32::MIN as Real) || max > (i32::MAX as Real) {
-                Err(RealToIndexError { from: value.clone() })
+                Err(RealToIndexError {
+                    from: value.clone(),
+                })
             } else {
                 let min = round_up(min) as Index;
                 let max = round_down(max) as Index;
@@ -286,7 +296,9 @@ impl fmt::Display for Interval<i32> {
     }
 }
 
-fn is_empty_interval<T: PartialOrd>(min: T, max: T) -> bool { !(min <= max) }
+fn is_empty_interval<T: PartialOrd>(min: T, max: T) -> bool {
+    !(min <= max)
+}
 
 fn round_up(v: Real) -> Real {
     if v.fract() < 0.5 {
@@ -296,7 +308,7 @@ fn round_up(v: Real) -> Real {
     }
 }
 
-fn round_down(v: Real) -> Real{
+fn round_down(v: Real) -> Real {
     if v.fract() <= 0.5 {
         v.trunc()
     } else {

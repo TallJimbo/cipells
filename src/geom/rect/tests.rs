@@ -1,20 +1,21 @@
-use rand::{Rng, XorShiftRng, SeedableRng};
+use rand::{Rng, SeedableRng, XorShiftRng};
 use try_from::TryFrom;
 
 use super::test_utils::TestRects;
-use super::{Scalar, Point2, Vector2, Rect, IndexRect, RealRect, AbstractRect, Interval, AbstractInterval};
-
+use super::{
+    AbstractInterval, AbstractRect, IndexRect, Interval, Point2, RealRect, Rect, Scalar, Vector2,
+};
 
 struct TestSuite<T: Scalar> {
     points: Vec<T>,
     rects: TestRects<T>,
 }
 
-
 impl<T> TestSuite<T>
-    where T: Scalar + Default + AbstractInterval<T>,
-          Point2<T>: AbstractRect<T>,
-          <Point2<T> as AbstractRect<T>>::Element: AbstractInterval<T>,
+where
+    T: Scalar + Default + AbstractInterval<T>,
+    Point2<T>: AbstractRect<T>,
+    <Point2<T> as AbstractRect<T>>::Element: AbstractInterval<T>,
 {
     pub fn new(points: Vec<T>) -> Self {
         let rects = TestRects::new(&points);
@@ -66,7 +67,10 @@ impl<T> TestSuite<T>
                     for (n1y, p1y) in self.points.iter().enumerate().skip(n0y + 1) {
                         let mut sx = self.points[n0x..=n1x].to_vec();
                         let mut sy = self.points[n0y..=n1y].to_vec();
-                        let b = Rect { x: Interval::new(*p0x..=*p1x), y: Interval::new(*p0y..=*p1y) };
+                        let b = Rect {
+                            x: Interval::new(*p0x..=*p1x),
+                            y: Interval::new(*p0y..=*p1y),
+                        };
                         assert_eq!(
                             b,
                             Rect::hull(iproduct!(&sx, &sy).map(|(x, y)| Point2::new(*x, *y)))
@@ -93,15 +97,20 @@ impl<T> TestSuite<T>
     pub fn contains(&self) {
         for lhs in self.rects.finite() {
             for rhs in self.rects.finite() {
-                assert_eq!(lhs.contains(rhs), lhs.x.contains(rhs.x) && lhs.y.contains(rhs.y));
+                assert_eq!(
+                    lhs.contains(rhs),
+                    lhs.x.contains(rhs.x) && lhs.y.contains(rhs.y)
+                );
                 assert_eq!(lhs == rhs, lhs.contains(rhs) && rhs.contains(lhs));
             }
             for rhs in self.rects.xy_empty() {
                 assert!(lhs.contains(rhs));
             }
             for (x, y) in iproduct!(&self.points, &self.points) {
-                assert_eq!(lhs.contains(Point2::new(*x, *y)),
-                           lhs.x.contains(*x) && lhs.y.contains(*y));
+                assert_eq!(
+                    lhs.contains(Point2::new(*x, *y)),
+                    lhs.x.contains(*x) && lhs.y.contains(*y)
+                );
             }
         }
         for lhs in self.rects.empty() {
@@ -120,7 +129,10 @@ impl<T> TestSuite<T>
     pub fn intersects(&self) {
         for lhs in self.rects.finite() {
             for rhs in self.rects.all() {
-                assert_eq!(lhs.intersects(rhs), lhs.x.intersects(rhs.x) && lhs.y.intersects(rhs.y));
+                assert_eq!(
+                    lhs.intersects(rhs),
+                    lhs.x.intersects(rhs.x) && lhs.y.intersects(rhs.y)
+                );
             }
             for (x, y) in iproduct!(&self.points, &self.points) {
                 let p = Point2::new(*x, *y);
@@ -178,16 +190,15 @@ impl<T> TestSuite<T>
                 assert!(expanded.contains(rhs));
                 assert_eq!(
                     expanded.is_empty(),
-                    (lhs.x.is_empty() && rhs.x.is_empty()) ||
-                    (lhs.y.is_empty() && rhs.y.is_empty())
+                    (lhs.x.is_empty() && rhs.x.is_empty())
+                        || (lhs.y.is_empty() && rhs.y.is_empty())
                 );
                 assert_eq!(&expanded == rhs, rhs.contains(lhs));
                 assert_eq!(&expanded == lhs, lhs.contains(rhs));
             }
             for rhs in iproduct!(&self.points, &self.points).map(|(x, y)| Point2::new(*x, *y)) {
                 println!("rhs={}, lhs={:?}", rhs, lhs);
-                assert_eq!(lhs.expanded_to(rhs),
-                           lhs.expanded_to(Rect::new(rhs..=rhs)))
+                assert_eq!(lhs.expanded_to(rhs), lhs.expanded_to(Rect::new(rhs..=rhs)))
             }
         }
     }
@@ -224,12 +235,26 @@ fn real_construction() {
     let r3 = Rect::new(&r1);
     let r4 = Rect::new(r2);
     assert_eq!(&r3, &r4);
-    assert_eq!(Rect::new(Point2::new(2.5, 3.25)..),
-               Rect { x: Interval::new(2.5..), y: Interval::new(3.25..) });
-    let r5 = Rect { x: Interval::new(..5.0), y: Interval::new(..7.75)};
+    assert_eq!(
+        Rect::new(Point2::new(2.5, 3.25)..),
+        Rect {
+            x: Interval::new(2.5..),
+            y: Interval::new(3.25..)
+        }
+    );
+    let r5 = Rect {
+        x: Interval::new(..5.0),
+        y: Interval::new(..7.75),
+    };
     assert_eq!(Rect::new(..Point2::new(5.0, 7.75)), r5);
     assert_eq!(Rect::new(..=Point2::new(5.0, 7.75)), r5);
-    assert_eq!(Rect::new(..), Rect { x: Interval::new(..), y: Interval::new(..) });
+    assert_eq!(
+        Rect::new(..),
+        Rect {
+            x: Interval::new(..),
+            y: Interval::new(..)
+        }
+    );
 }
 
 #[test]
@@ -256,8 +281,12 @@ fn conversion() {
     assert!(IndexRect::try_from(&RealRect::with_intervals(2.5..=5.75, 3.5..)).is_err());
     assert!(IndexRect::try_from(&RealRect::with_intervals(2.5.., 3.5..6.0)).is_err());
     assert!(IndexRect::try_from(&RealRect::with_intervals(.., ..)).is_err());
-    assert_eq!(IndexRect::try_from(&RealRect::with_intervals((), ())).unwrap(),
-               IndexRect::with_intervals((), ()));
-    assert_eq!(RealRect::from(&IndexRect::with_intervals((), ())),
-               RealRect::with_intervals((), ()));
+    assert_eq!(
+        IndexRect::try_from(&RealRect::with_intervals((), ())).unwrap(),
+        IndexRect::with_intervals((), ())
+    );
+    assert_eq!(
+        RealRect::from(&IndexRect::with_intervals((), ())),
+        RealRect::with_intervals((), ())
+    );
 }

@@ -1,11 +1,10 @@
 use std::f64;
 
-use rand::{Rng, XorShiftRng, SeedableRng};
+use rand::{Rng, SeedableRng, XorShiftRng};
 use try_from::TryFrom;
 
 use super::test_utils::TestIntervals;
-use super::{Interval, Scalar, AbstractInterval, RealInterval, IndexInterval};
-
+use super::{AbstractInterval, IndexInterval, Interval, RealInterval, Scalar};
 
 struct TestSuite<T: Scalar> {
     points: Vec<T>,
@@ -16,9 +15,9 @@ struct TestSuite<T: Scalar> {
     ba: Interval<T>,
 }
 
-
 impl<T> TestSuite<T>
-    where T: Scalar + Default + AbstractInterval<T>
+where
+    T: Scalar + Default + AbstractInterval<T>,
 {
     pub fn new(points: Vec<T>) -> Self {
         let a = points[0];
@@ -63,16 +62,20 @@ impl<T> TestSuite<T>
     pub fn contains(&self) {
         for lhs in self.intervals.finite() {
             for rhs in self.intervals.finite() {
-                assert_eq!(lhs.contains(rhs),
-                           lhs.min().unwrap() <= rhs.min().unwrap() &&
-                           lhs.max().unwrap() >= rhs.max().unwrap());
+                assert_eq!(
+                    lhs.contains(rhs),
+                    lhs.min().unwrap() <= rhs.min().unwrap()
+                        && lhs.max().unwrap() >= rhs.max().unwrap()
+                );
             }
             for rhs in self.intervals.empty() {
                 assert!(lhs.contains(rhs));
             }
             for rhs in &self.points {
-                assert_eq!(lhs.contains(*rhs),
-                           lhs.min().unwrap() <= *rhs && lhs.max().unwrap() >= *rhs);
+                assert_eq!(
+                    lhs.contains(*rhs),
+                    lhs.min().unwrap() <= *rhs && lhs.max().unwrap() >= *rhs
+                );
             }
         }
         for lhs in self.intervals.empty() {
@@ -88,12 +91,15 @@ impl<T> TestSuite<T>
     pub fn intersects(&self) {
         for lhs in self.intervals.finite() {
             for rhs in self.intervals.finite() {
-                assert_eq!(lhs.intersects(rhs),
-                           (lhs.min().unwrap() <= rhs.max().unwrap() &&
-                            lhs.max().unwrap() >= rhs.min().unwrap()) ||
-                           (rhs.min().unwrap() <= lhs.max().unwrap() &&
-                            rhs.max().unwrap() >= lhs.min().unwrap()) ||
-                           lhs.contains(rhs) || rhs.contains(lhs))
+                assert_eq!(
+                    lhs.intersects(rhs),
+                    (lhs.min().unwrap() <= rhs.max().unwrap()
+                        && lhs.max().unwrap() >= rhs.min().unwrap())
+                        || (rhs.min().unwrap() <= lhs.max().unwrap()
+                            && rhs.max().unwrap() >= lhs.min().unwrap())
+                        || lhs.contains(rhs)
+                        || rhs.contains(lhs)
+                )
             }
             for rhs in self.intervals.empty() {
                 assert!(!lhs.intersects(rhs));
@@ -139,8 +145,10 @@ impl<T> TestSuite<T>
                 let clipped = lhs.clipped_to(rhs);
                 assert!(lhs.contains(&clipped));
                 assert!(rhs.contains(&clipped));
-                assert_eq!(clipped.is_empty(),
-                           lhs.is_empty() || rhs.is_empty() || !lhs.intersects(rhs));
+                assert_eq!(
+                    clipped.is_empty(),
+                    lhs.is_empty() || rhs.is_empty() || !lhs.intersects(rhs)
+                );
                 assert_eq!(clipped == *rhs, lhs.contains(rhs));
                 assert_eq!(clipped == *lhs, rhs.contains(lhs));
             }
@@ -153,8 +161,7 @@ impl<T> TestSuite<T>
                 let expanded = lhs.expanded_to(rhs);
                 assert!(expanded.contains(lhs));
                 assert!(expanded.contains(rhs));
-                assert_eq!(expanded.is_empty(),
-                           lhs.is_empty() && rhs.is_empty());
+                assert_eq!(expanded.is_empty(), lhs.is_empty() && rhs.is_empty());
                 assert_eq!(expanded == *lhs, lhs.contains(rhs));
                 assert_eq!(expanded == *rhs, rhs.contains(lhs));
             }
@@ -166,8 +173,12 @@ impl<T> TestSuite<T>
             for rhs in &self.points {
                 let dilated = lhs.dilated_by(*rhs);
                 if dilated.is_empty() {
-                    println!("lhs={:?} < rhs={:?}", lhs.size(), T::from(-2).unwrap()*(*rhs));
-                    assert!(lhs.size() < T::from(-2).unwrap()*(*rhs));
+                    println!(
+                        "lhs={:?} < rhs={:?}",
+                        lhs.size(),
+                        T::from(-2).unwrap() * (*rhs)
+                    );
+                    assert!(lhs.size() < T::from(-2).unwrap() * (*rhs));
                 } else {
                     assert_eq!(lhs.min().unwrap() - *rhs, dilated.min().unwrap());
                     assert_eq!(lhs.max().unwrap() + *rhs, dilated.max().unwrap());
@@ -281,8 +292,12 @@ fn conversion() {
     assert!(IndexInterval::try_from(&RealInterval::new(..6.0)).is_err());
     assert!(IndexInterval::try_from(&RealInterval::new(3.0..)).is_err());
     assert!(IndexInterval::try_from(&RealInterval::new(..)).is_err());
-    assert_eq!(IndexInterval::try_from(&RealInterval::new(())).unwrap(),
-               IndexInterval::new(()));
-    assert_eq!(RealInterval::from(&IndexInterval::new(())),
-               RealInterval::new(()));
+    assert_eq!(
+        IndexInterval::try_from(&RealInterval::new(())).unwrap(),
+        IndexInterval::new(())
+    );
+    assert_eq!(
+        RealInterval::from(&IndexInterval::new(())),
+        RealInterval::new(())
+    );
 }

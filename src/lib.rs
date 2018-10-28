@@ -1,7 +1,7 @@
+extern crate alga;
+extern crate nalgebra;
 extern crate num;
 extern crate try_from;
-extern crate nalgebra;
-extern crate alga;
 
 #[cfg(test)]
 extern crate rand;

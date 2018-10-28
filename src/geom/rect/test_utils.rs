@@ -1,8 +1,8 @@
-use std::slice::Iter;
 use std::iter::Chain;
+use std::slice::Iter;
 
-use super::{Rect, Scalar, AbstractInterval, Interval};
 use super::super::TestIntervals;
+use super::{AbstractInterval, Interval, Rect, Scalar};
 
 #[derive(Default)]
 pub struct TestRects<T: Scalar> {
@@ -12,16 +12,20 @@ pub struct TestRects<T: Scalar> {
     xy_empty: Vec<Rect<T>>,
 }
 
-
 impl<T> TestRects<T>
-    where T: Scalar + Default + AbstractInterval<T>
+where
+    T: Scalar + Default + AbstractInterval<T>,
 {
-
     fn interval_iters_to_rects<'a, 'b, U, V>(x: U, y: V) -> Vec<Rect<T>>
-        where U: Iterator<Item=&'a Interval<T>> + Clone,
-              V: Iterator<Item=&'b Interval<T>> + Clone,
+    where
+        U: Iterator<Item = &'a Interval<T>> + Clone,
+        V: Iterator<Item = &'b Interval<T>> + Clone,
     {
-        iproduct!(x, y).map(|xy| Rect { x: xy.0.clone(), y: xy.1.clone() }).collect()
+        iproduct!(x, y)
+            .map(|xy| Rect {
+                x: xy.0.clone(),
+                y: xy.1.clone(),
+            }).collect()
     }
 
     pub fn new(points: &Vec<T>) -> Self {
@@ -54,8 +58,9 @@ impl<T> TestRects<T>
         self.xy_empty().chain(self.x_empty().chain(self.y_empty()))
     }
 
-    pub fn all(&self) -> Chain<Iter<Rect<T>>, Chain<Iter<Rect<T>>, Chain<Iter<Rect<T>>, Iter<Rect<T>>>>> {
+    pub fn all(
+        &self,
+    ) -> Chain<Iter<Rect<T>>, Chain<Iter<Rect<T>>, Chain<Iter<Rect<T>>, Iter<Rect<T>>>>> {
         self.finite().chain(self.empty())
     }
-
 }

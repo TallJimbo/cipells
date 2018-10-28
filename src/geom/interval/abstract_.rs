@@ -1,69 +1,98 @@
 use std::f64;
-use std::ops::{RangeInclusive, Range, RangeTo, RangeFrom, RangeToInclusive, RangeFull};
+use std::ops::{Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive};
 
-use super::{Scalar, Interval, Real, Index};
-
+use super::{Index, Interval, Real, Scalar};
 
 pub trait AbstractInterval<T>
-    where T: PartialOrd
+where
+    T: PartialOrd,
 {
     fn to_min_max_tuple(self) -> (T, T);
 }
 
 impl<T> AbstractInterval<T> for Interval<T>
-    where T: Scalar
+where
+    T: Scalar,
 {
-    fn to_min_max_tuple(self) -> (T, T) { (self.min, self.max) }
+    fn to_min_max_tuple(self) -> (T, T) {
+        (self.min, self.max)
+    }
 }
 
 impl<'a, T> AbstractInterval<T> for &'a Interval<T>
-    where T: Scalar
+where
+    T: Scalar,
 {
-    fn to_min_max_tuple(self) -> (T, T) { (self.min, self.max) }
+    fn to_min_max_tuple(self) -> (T, T) {
+        (self.min, self.max)
+    }
 }
 
 impl<T> AbstractInterval<T> for RangeInclusive<T>
-    where T: Scalar
+where
+    T: Scalar,
 {
-    fn to_min_max_tuple(self) -> (T, T) { (*self.start(), *self.end()) }
+    fn to_min_max_tuple(self) -> (T, T) {
+        (*self.start(), *self.end())
+    }
 }
 
 impl AbstractInterval<Real> for Real {
-    fn to_min_max_tuple(self) -> (Real, Real) { (self, self) }
+    fn to_min_max_tuple(self) -> (Real, Real) {
+        (self, self)
+    }
 }
 
 impl AbstractInterval<Index> for Index {
-    fn to_min_max_tuple(self) -> (Index, Index) { (self, self) }
+    fn to_min_max_tuple(self) -> (Index, Index) {
+        (self, self)
+    }
 }
 
 impl AbstractInterval<Real> for () {
-    fn to_min_max_tuple(self) -> (Real, Real) { (f64::NAN, f64::NAN) }
+    fn to_min_max_tuple(self) -> (Real, Real) {
+        (f64::NAN, f64::NAN)
+    }
 }
 
 impl AbstractInterval<Index> for () {
-    fn to_min_max_tuple(self) -> (Index, Index) { (0, -1) }
+    fn to_min_max_tuple(self) -> (Index, Index) {
+        (0, -1)
+    }
 }
 
 impl AbstractInterval<Real> for Range<Real> {
-    fn to_min_max_tuple(self) -> (Real, Real) { (self.start, self.end) }
+    fn to_min_max_tuple(self) -> (Real, Real) {
+        (self.start, self.end)
+    }
 }
 
 impl AbstractInterval<Index> for Range<Index> {
-    fn to_min_max_tuple(self) -> (Index, Index) { (self.start, self.end - 1) }
+    fn to_min_max_tuple(self) -> (Index, Index) {
+        (self.start, self.end - 1)
+    }
 }
 
 impl AbstractInterval<Real> for RangeTo<Real> {
-    fn to_min_max_tuple(self) -> (Real, Real) { (f64::NEG_INFINITY, self.end) }
+    fn to_min_max_tuple(self) -> (Real, Real) {
+        (f64::NEG_INFINITY, self.end)
+    }
 }
 
 impl AbstractInterval<Real> for RangeFrom<Real> {
-    fn to_min_max_tuple(self) -> (Real, Real) { (self.start, f64::INFINITY) }
+    fn to_min_max_tuple(self) -> (Real, Real) {
+        (self.start, f64::INFINITY)
+    }
 }
 
 impl AbstractInterval<Real> for RangeFull {
-    fn to_min_max_tuple(self) -> (Real, Real) { (f64::NEG_INFINITY, f64::INFINITY) }
+    fn to_min_max_tuple(self) -> (Real, Real) {
+        (f64::NEG_INFINITY, f64::INFINITY)
+    }
 }
 
 impl AbstractInterval<Real> for RangeToInclusive<Real> {
-    fn to_min_max_tuple(self) -> (Real, Real) { (f64::NEG_INFINITY, self.end) }
+    fn to_min_max_tuple(self) -> (Real, Real) {
+        (f64::NEG_INFINITY, self.end)
+    }
 }

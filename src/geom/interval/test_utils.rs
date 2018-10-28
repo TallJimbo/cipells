@@ -1,7 +1,7 @@
-use std::slice::Iter;
 use std::iter::Chain;
+use std::slice::Iter;
 
-use super::{Interval, Scalar, AbstractInterval};
+use super::{AbstractInterval, Interval, Scalar};
 
 #[derive(Default)]
 pub struct TestIntervals<T: Scalar> {
@@ -11,9 +11,10 @@ pub struct TestIntervals<T: Scalar> {
 }
 
 impl<T> TestIntervals<T>
-    where T: Scalar + Default + AbstractInterval<T>
+where
+    T: Scalar + Default + AbstractInterval<T>,
 {
-    pub fn new(points: &Vec<T>) -> Self{
+    pub fn new(points: &Vec<T>) -> Self {
         let mut result: Self = Default::default();
         for (i, lhs) in points.iter().enumerate() {
             for (j, rhs) in points.iter().enumerate() {
