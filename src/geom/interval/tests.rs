@@ -4,10 +4,10 @@ use rand::{Rng, XorShiftRng, SeedableRng};
 use try_from::TryFrom;
 
 use super::test_utils::TestIntervals;
-use super::{Interval, IntervalElement, AbstractInterval, RealInterval, IndexInterval};
+use super::{Interval, Scalar, AbstractInterval, RealInterval, IndexInterval};
 
 
-struct TestSuite<T: IntervalElement> {
+struct TestSuite<T: Scalar> {
     points: Vec<T>,
     intervals: TestIntervals<T>,
     a: T,
@@ -18,7 +18,7 @@ struct TestSuite<T: IntervalElement> {
 
 
 impl<T> TestSuite<T>
-    where T: IntervalElement + Default + AbstractInterval<T>
+    where T: Scalar + Default + AbstractInterval<T>
 {
     pub fn new(points: Vec<T>) -> Self {
         let a = points[0];

@@ -1,17 +1,17 @@
 use std::slice::Iter;
 use std::iter::Chain;
 
-use super::{Interval, IntervalElement, AbstractInterval};
+use super::{Interval, Scalar, AbstractInterval};
 
 #[derive(Default)]
-pub struct TestIntervals<T: IntervalElement> {
+pub struct TestIntervals<T: Scalar> {
     nonsingular: Vec<Interval<T>>,
     singular: Vec<Interval<T>>,
     empty: Vec<Interval<T>>,
 }
 
 impl<T> TestIntervals<T>
-    where T: IntervalElement + Default + AbstractInterval<T>
+    where T: Scalar + Default + AbstractInterval<T>
 {
     pub fn new(points: &Vec<T>) -> Self{
         let mut result: Self = Default::default();
