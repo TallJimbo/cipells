@@ -1,7 +1,10 @@
 use super::detail::GuaranteedBounded;
 use super::{AbstractBounds, Bounded, Bounds, Empty};
 
-impl<R: GuaranteedBounded> Bounds<R> {
+impl<R> Bounds<R>
+where
+    R: GuaranteedBounded,
+{
     pub fn new(lower: R::Point, upper: R::Point) -> Self {
         GuaranteedBounded::_new(lower, upper)
     }
@@ -17,17 +20,23 @@ impl<R: GuaranteedBounded> Bounds<R> {
         }
     }
 
-    pub fn clip_to<'a, U>(&mut self, other: U)
+    pub fn clip_to<U>(&mut self, other: U)
     where
         U: AbstractBounds<R>,
     {
         // extract current value of self and set it to Empty (for now)
         if let Bounded(b) = std::mem::replace(self, Empty) {
-            // if self is non-Empty, do the clip and assign to it (which
+            // if self was not Empty, do the clip and assign to it (which
             // may or may not assign Empty)
             *self = b._clipped_to(other);
         }
         // if self was Empty, it should stay Empty
+    }
+
+    pub fn shift_by(&mut self, offset: R::Vector) {
+        if let Bounded(ref mut b) = self {
+            b._shift_by(offset);
+        }
     }
 
     pub fn hull<'a, I>(points: I) -> Self
@@ -46,7 +55,8 @@ impl<R: GuaranteedBounded> Bounds<R> {
 
 impl<'a, R> AbstractBounds<R> for &'a Bounds<R>
 where
-    R: GuaranteedBounded + PartialEq + Clone + 'static,
+    R: GuaranteedBounded,
+    R: PartialEq + Clone + 'static,
     &'a R: AbstractBounds<R>,
 {
     fn to_bounds(self) -> Bounds<R> {
@@ -98,6 +108,14 @@ where
             b.expanded_to(other)
         } else {
             other.to_bounds()
+        }
+    }
+
+    fn shifted_by(self, offset: R::Vector) -> Bounds<R> {
+        if let Bounded(b) = self {
+            b.shifted_by(offset)
+        } else {
+            Empty
         }
     }
 }

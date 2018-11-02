@@ -42,17 +42,21 @@ mod detail {
 
     pub trait GuaranteedBounded: Sized + 'static {
         type Point;
+        type Vector;
         fn _new(lower: Self::Point, upper: Self::Point) -> super::Bounds<Self>;
         fn _expand_to<U: super::AbstractBounds<Self>>(&mut self, other: U);
         // low-level implementation of clip is not in-place because it can
         // transform non-Empty to Empty.
         fn _clipped_to<U: super::AbstractBounds<Self>>(&self, other: U) -> super::Bounds<Self>;
-        fn _shift_by(&mut self, point: Self::Point);
+        fn _shift_by(&mut self, offset: Self::Vector);
     }
 
 } // mod detail
 
-pub trait AbstractBounds<R> {
+pub trait AbstractBounds<R>
+where
+    R: detail::GuaranteedBounded,
+{
     fn to_bounds(self) -> Bounds<R>;
 
     fn is_empty(self) -> bool;
@@ -72,6 +76,8 @@ pub trait AbstractBounds<R> {
     fn expanded_to<U>(self, other: U) -> Bounds<R>
     where
         U: AbstractBounds<R>;
+
+    fn shifted_by(self, offset: R::Vector) -> Bounds<R>;
 }
 
 mod impl_bounds;

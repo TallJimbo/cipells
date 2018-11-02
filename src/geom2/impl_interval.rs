@@ -3,6 +3,7 @@ use super::{AbstractBounds, Bounded, Bounds, Empty, Interval, Scalar};
 
 impl<T: Scalar> GuaranteedBounded for Interval<T> {
     type Point = T;
+    type Vector = T;
     fn _new(lower: Self::Point, upper: Self::Point) -> Bounds<Self> {
         if lower <= upper {
             Bounded(Interval { lower, upper })
@@ -23,9 +24,9 @@ impl<T: Scalar> GuaranteedBounded for Interval<T> {
             Empty
         }
     }
-    fn _shift_by(&mut self, point: Self::Point) {
-        self.lower += point;
-        self.upper += point;
+    fn _shift_by(&mut self, offset: Self::Vector) {
+        self.lower += offset;
+        self.upper += offset;
     }
 }
 
@@ -33,8 +34,8 @@ impl<T: Scalar> Interval<T> {
     pub fn expand_to<U: AbstractBounds<Self>>(&mut self, other: U) {
         self._expand_to(other);
     }
-    pub fn shift_by(&mut self, other: T) {
-        self._shift_by(other);
+    pub fn shift_by(&mut self, offset: T) {
+        self._shift_by(offset);
     }
     pub fn lower(&self) -> T {
         self.lower
@@ -91,6 +92,12 @@ impl<'a, T: Scalar> AbstractBounds<Interval<T>> for &'a Interval<T> {
     {
         let mut result = self.clone();
         result._expand_to(other);
+        Bounded(result)
+    }
+
+    fn shifted_by(self, offset: <Interval<T> as GuaranteedBounded>::Vector) -> Bounds<Interval<T>> {
+        let mut result = self.clone();
+        result._shift_by(offset);
         Bounded(result)
     }
 }
