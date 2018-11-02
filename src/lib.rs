@@ -1,5 +1,6 @@
 extern crate alga;
 extern crate nalgebra;
+extern crate ndarray;
 extern crate num;
 extern crate try_from;
 
@@ -10,3 +11,5 @@ extern crate rand;
 extern crate itertools;
 
 pub mod geom;
+
+pub mod image;

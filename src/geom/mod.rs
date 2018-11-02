@@ -9,6 +9,11 @@ use num::{NumCast, Signed};
 pub type Real = f64;
 pub type Index = i32;
 
+pub type RealPoint = Point2<Real>;
+pub type IndexPoint = Point2<Index>;
+pub type RealVector = Vector2<Real>;
+pub type IndexVector = Vector2<Index>;
+
 pub trait Scalar:
     'static
     + Signed
@@ -64,14 +69,15 @@ impl Scalar for Real {
 }
 
 mod interval;
-use self::interval::AbstractInterval;
-pub use self::interval::{IndexInterval, Interval, RealInterval, RealToIndexError};
+pub use self::interval::{
+    AbstractInterval, IndexInterval, Interval, RealInterval, RealToIndexError,
+};
 
 #[cfg(test)]
 pub use self::interval::test_utils::TestIntervals;
 
 mod rect;
-pub use self::rect::{IndexRect, RealRect, Rect};
+pub use self::rect::{AbstractRect, IndexRect, RealRect, Rect};
 
 #[cfg(test)]
 pub use self::rect::test_utils::TestRects;
