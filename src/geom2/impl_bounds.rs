@@ -118,4 +118,12 @@ where
             Empty
         }
     }
+
+    fn dilated_by(self, border: R::Vector) -> Bounds<R> {
+        if let Bounded(b) = self {
+            b.dilated_by(border)
+        } else {
+            Empty
+        }
+    }
 }

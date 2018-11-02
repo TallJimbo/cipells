@@ -28,6 +28,9 @@ impl<T: Scalar> GuaranteedBounded for Interval<T> {
         self.lower += offset;
         self.upper += offset;
     }
+    fn _dilated_by(&self, border: Self::Vector) -> Bounds<Self> {
+        Interval::_new(self.lower - border, self.upper + border)
+    }
 }
 
 impl<T: Scalar> Interval<T> {
@@ -99,6 +102,10 @@ impl<'a, T: Scalar> AbstractBounds<Interval<T>> for &'a Interval<T> {
         let mut result = self.clone();
         result._shift_by(offset);
         Bounded(result)
+    }
+
+    fn dilated_by(self, border: <Interval<T> as GuaranteedBounded>::Vector) -> Bounds<Interval<T>> {
+        self._dilated_by(border)
     }
 }
 

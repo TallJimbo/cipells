@@ -40,7 +40,7 @@ pub use self::Bounds::*;
 
 mod detail {
 
-    pub trait GuaranteedBounded: Sized + 'static {
+    pub trait GuaranteedBounded: 'static + Sized + PartialEq {
         type Point;
         type Vector;
         fn _new(lower: Self::Point, upper: Self::Point) -> super::Bounds<Self>;
@@ -49,13 +49,16 @@ mod detail {
         // transform non-Empty to Empty.
         fn _clipped_to<U: super::AbstractBounds<Self>>(&self, other: U) -> super::Bounds<Self>;
         fn _shift_by(&mut self, offset: Self::Vector);
+        // dilate can also transform non-Empty to Empty (via negative borders)
+        fn _dilated_by(&self, border: Self::Vector) -> super::Bounds<Self>;
     }
 
 } // mod detail
 
-pub trait AbstractBounds<R>
+pub trait AbstractBounds<R>: Sized
 where
     R: detail::GuaranteedBounded,
+    Bounds<R>: PartialEq,
 {
     fn to_bounds(self) -> Bounds<R>;
 
@@ -78,6 +81,11 @@ where
         U: AbstractBounds<R>;
 
     fn shifted_by(self, offset: R::Vector) -> Bounds<R>;
+
+    fn dilated_by(self, border: R::Vector) -> Bounds<R>;
+    /*
+    fn eroded_by(self, border: R::Vector) -> Bounds<R>;
+*/
 }
 
 mod impl_bounds;

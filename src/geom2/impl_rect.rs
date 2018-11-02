@@ -21,7 +21,7 @@ impl<T: Scalar> GuaranteedBounded for Rect<T> {
             self.y.expand_to(&other.y);
         }
     }
-    fn _clipped_to<U: AbstractBounds<Self>>(&self, other: U) -> Bounds<Rect<T>> {
+    fn _clipped_to<U: AbstractBounds<Self>>(&self, other: U) -> Bounds<Self> {
         if let Bounded(other) = other.to_bounds() {
             Bounds::from_xy(self.x.clipped_to(&other.x), self.y.clipped_to(&other.y))
         } else {
@@ -31,6 +31,9 @@ impl<T: Scalar> GuaranteedBounded for Rect<T> {
     fn _shift_by(&mut self, offset: Self::Vector) {
         self.x._shift_by(offset.x);
         self.y._shift_by(offset.y);
+    }
+    fn _dilated_by(&self, border: Self::Vector) -> Bounds<Self> {
+        Bounds::from_xy(self.x._dilated_by(border.x), self.y._dilated_by(border.y))
     }
 }
 
@@ -122,5 +125,27 @@ impl<'a, T: Scalar> AbstractBounds<Rect<T>> for &'a Rect<T> {
         let mut result = self.clone();
         result._shift_by(offset);
         Bounded(result)
+    }
+
+    fn dilated_by(self, border: <Rect<T> as GuaranteedBounded>::Vector) -> Bounds<Rect<T>> {
+        self._dilated_by(border)
+    }
+}
+
+impl<T: Scalar> From<Point2<T>> for Bounds<Rect<T>> {
+    fn from(other: Point2<T>) -> Bounds<Rect<T>> {
+        Rect::_new(other, other)
+    }
+}
+
+impl<T: Scalar> From<Rect<T>> for Bounds<Rect<T>> {
+    fn from(other: Rect<T>) -> Bounds<Rect<T>> {
+        Bounded(other)
+    }
+}
+
+impl<T: Scalar> From<std::ops::RangeInclusive<Point2<T>>> for Bounds<Rect<T>> {
+    fn from(other: std::ops::RangeInclusive<Point2<T>>) -> Bounds<Rect<T>> {
+        Rect::_new(*other.start(), *other.end())
     }
 }
