@@ -40,31 +40,38 @@ pub use self::Bounds::*;
 
 mod detail {
 
-    pub trait BoundedValue: Sized {
+    pub trait GuaranteedBounded: Sized + 'static {
         type Point;
-        fn new(lower: Self::Point, upper: Self::Point) -> super::Bounds<Self>;
+        fn _new(lower: Self::Point, upper: Self::Point) -> super::Bounds<Self>;
+        fn _expand_to<U: super::AbstractBounds<Self>>(&mut self, other: U);
+        // low-level implementation of clip is not in-place because it can
+        // transform non-Empty to Empty.
+        fn _clipped_to<U: super::AbstractBounds<Self>>(&self, other: U) -> super::Bounds<Self>;
+        fn _shift_by(&mut self, point: Self::Point);
     }
 
 } // mod detail
 
-pub trait AbstractBounds<I> {
-    fn is_empty(&self) -> bool;
+pub trait AbstractBounds<R> {
+    fn to_bounds(self) -> Bounds<R>;
 
-    fn contains<U>(&self, other: U) -> bool
-    where
-        Bounds<I>: From<U>;
+    fn is_empty(self) -> bool;
 
-    fn intersects<U>(&self, other: U) -> bool
+    fn contains<U>(self, other: U) -> bool
     where
-        Bounds<I>: From<U>;
+        U: AbstractBounds<R>;
 
-    fn clipped_to<U>(&self, other: U) -> Bounds<I>
+    fn intersects<U>(self, other: U) -> bool
     where
-        Bounds<I>: From<U>;
+        U: AbstractBounds<R>;
 
-    fn expanded_to<U>(&self, other: U) -> Bounds<I>
+    fn clipped_to<U>(self, other: U) -> Bounds<R>
     where
-        Bounds<I>: From<U>;
+        U: AbstractBounds<R>;
+
+    fn expanded_to<U>(self, other: U) -> Bounds<R>
+    where
+        U: AbstractBounds<R>;
 }
 
 mod impl_bounds;

@@ -1,74 +1,103 @@
-use super::detail::BoundedValue;
+use super::detail::GuaranteedBounded;
 use super::{AbstractBounds, Bounded, Bounds, Empty};
 
-impl<R: BoundedValue> Bounds<R> {
+impl<R: GuaranteedBounded> Bounds<R> {
     pub fn new(lower: R::Point, upper: R::Point) -> Self {
-        BoundedValue::new(lower, upper)
+        GuaranteedBounded::_new(lower, upper)
     }
 
-    pub fn hull<I>(points: I) -> Self
+    pub fn expand_to<U>(&mut self, other: U)
+    where
+        U: AbstractBounds<R>,
+    {
+        if let Bounded(ref mut b) = self {
+            b._expand_to(other);
+        } else {
+            *self = other.to_bounds();
+        }
+    }
+
+    pub fn clip_to<'a, U>(&mut self, other: U)
+    where
+        U: AbstractBounds<R>,
+    {
+        // extract current value of self and set it to Empty (for now)
+        if let Bounded(b) = std::mem::replace(self, Empty) {
+            // if self is non-Empty, do the clip and assign to it (which
+            // may or may not assign Empty)
+            *self = b._clipped_to(other);
+        }
+        // if self was Empty, it should stay Empty
+    }
+
+    pub fn hull<'a, I>(points: I) -> Self
     where
         I: IntoIterator,
-        Bounds<R>: From<I::Item>,
-        Bounds<R>: AbstractBounds<R>,
+        I::Item: AbstractBounds<R>,
+        &'a Bounds<R>: AbstractBounds<R>,
     {
-        let mut result = Empty;
+        let mut result: Bounds<R> = Empty;
         for point in points {
-            result = result.expanded_to(point)
+            result.expand_to(point)
         }
         result
     }
 }
 
-impl<R> AbstractBounds<R> for Bounds<R>
+impl<'a, R> AbstractBounds<R> for &'a Bounds<R>
 where
-    R: BoundedValue + AbstractBounds<R> + PartialEq,
+    R: GuaranteedBounded + PartialEq + Clone + 'static,
+    &'a R: AbstractBounds<R>,
 {
-    fn is_empty(&self) -> bool {
+    fn to_bounds(self) -> Bounds<R> {
+        (*self).clone()
+    }
+
+    fn is_empty(self) -> bool {
         self == &Empty
     }
 
-    fn contains<U>(&self, other: U) -> bool
+    fn contains<U>(self, other: U) -> bool
     where
-        Bounds<R>: From<U>,
+        U: AbstractBounds<R>,
     {
-        if let Bounded(ref b) = self {
+        if let Bounded(b) = self {
             b.contains(other)
         } else {
-            Bounds::from(other).is_empty()
+            other.is_empty()
         }
     }
 
-    fn intersects<U>(&self, other: U) -> bool
+    fn intersects<U>(self, other: U) -> bool
     where
-        Bounds<R>: From<U>,
+        U: AbstractBounds<R>,
     {
-        if let Bounded(ref b) = self {
+        if let Bounded(b) = self {
             b.intersects(other)
         } else {
             false
         }
     }
 
-    fn clipped_to<U>(&self, other: U) -> Bounds<R>
+    fn clipped_to<U>(self, other: U) -> Bounds<R>
     where
-        Bounds<R>: From<U>,
+        U: AbstractBounds<R>,
     {
-        if let Bounded(ref b) = self {
+        if let Bounded(b) = self {
             b.clipped_to(other)
         } else {
             Empty
         }
     }
 
-    fn expanded_to<U>(&self, other: U) -> Bounds<R>
+    fn expanded_to<U>(self, other: U) -> Bounds<R>
     where
-        Bounds<R>: From<U>,
+        U: AbstractBounds<R>,
     {
-        if let Bounded(ref b) = self {
+        if let Bounded(b) = self {
             b.expanded_to(other)
         } else {
-            Bounds::from(other)
+            other.to_bounds()
         }
     }
 }

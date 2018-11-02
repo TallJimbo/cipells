@@ -1,41 +1,59 @@
-use super::detail::BoundedValue;
+use super::detail::GuaranteedBounded;
 use super::{AbstractBounds, Bounded, Bounds, Empty, Interval, Rect, Scalar};
 use nalgebra::{Point2, Vector2};
 
-impl<T: Scalar> BoundedValue for Rect<T> {
+impl<T: Scalar> GuaranteedBounded for Rect<T> {
     type Point = Point2<T>;
-    fn new(lower: Self::Point, upper: Self::Point) -> Bounds<Self> {
-        let x = Interval::new(lower.x, upper.x);
-        let y = Interval::new(lower.y, upper.y);
+    fn _new(lower: Self::Point, upper: Self::Point) -> Bounds<Self> {
+        let x = Interval::_new(lower.x, upper.x);
+        let y = Interval::_new(lower.y, upper.y);
         if let (Bounded(x), Bounded(y)) = (x, y) {
             Bounded(Rect { x, y })
         } else {
             Empty
         }
     }
+    fn _expand_to<U: AbstractBounds<Self>>(&mut self, other: U) {
+        if let Bounded(other) = other.to_bounds() {
+            self.x.expand_to(&other.x);
+            self.y.expand_to(&other.y);
+        }
+    }
+    fn _clipped_to<U: AbstractBounds<Self>>(&self, other: U) -> Bounds<Rect<T>> {
+        if let Bounded(other) = other.to_bounds() {
+            Bounds::from_xy(self.x.clipped_to(&other.x), self.y.clipped_to(&other.y))
+        } else {
+            Empty
+        }
+    }
+    fn _shift_by(&mut self, point: Self::Point) {
+        self.x._shift_by(point.x);
+        self.y._shift_by(point.y);
+    }
 }
 
 impl<T: Scalar> Rect<T> {
+    pub fn expand_to<U: AbstractBounds<Self>>(&mut self, other: U) {
+        self._expand_to(other);
+    }
+    pub fn shift_by(&mut self, other: Point2<T>) {
+        self._shift_by(other);
+    }
     pub fn lower(&self) -> Point2<T> {
         Point2::new(self.x.lower(), self.y.lower())
     }
-
     pub fn upper(&self) -> Point2<T> {
         Point2::new(self.x.upper(), self.y.upper())
     }
-
     pub fn size(&self) -> Vector2<T> {
         Vector2::new(self.x.size(), self.y.size())
     }
-
     pub fn area(&self) -> T {
         self.x.size() * self.y.size()
     }
-
     pub fn width(&self) -> T {
         self.x.size()
     }
-
     pub fn height(&self) -> T {
         self.y.size()
     }
@@ -51,52 +69,50 @@ impl<T: Scalar> Bounds<Rect<T>> {
     }
 }
 
-impl<T: Scalar> AbstractBounds<Rect<T>> for Rect<T> {
-    fn is_empty(&self) -> bool {
+impl<'a, T: Scalar> AbstractBounds<Rect<T>> for &'a Rect<T> {
+    fn to_bounds(self) -> Bounds<Rect<T>> {
+        Bounded(self.clone())
+    }
+
+    fn is_empty(self) -> bool {
         false
     }
 
-    fn contains<U>(&self, other: U) -> bool
+    fn contains<U>(self, other: U) -> bool
     where
-        Bounds<Rect<T>>: From<U>,
+        U: AbstractBounds<Rect<T>>,
     {
-        if let Bounded(other) = Bounds::from(other) {
-            self.x.contains(other.x) && self.y.contains(other.y)
+        if let Bounded(other) = other.to_bounds() {
+            self.x.contains(&other.x) && self.y.contains(&other.y)
         } else {
             true
         }
     }
 
-    fn intersects<U>(&self, other: U) -> bool
+    fn intersects<U>(self, other: U) -> bool
     where
-        Bounds<Rect<T>>: From<U>,
+        U: AbstractBounds<Rect<T>>,
     {
-        if let Bounded(other) = Bounds::from(other) {
-            self.x.intersects(other.x) && self.y.intersects(other.y)
+        if let Bounded(other) = other.to_bounds() {
+            self.x.intersects(&other.x) && self.y.intersects(&other.y)
         } else {
             false
         }
     }
 
-    fn clipped_to<U>(&self, other: U) -> Bounds<Rect<T>>
+    fn clipped_to<U>(self, other: U) -> Bounds<Rect<T>>
     where
-        Bounds<Rect<T>>: From<U>,
+        U: AbstractBounds<Rect<T>>,
     {
-        if let Bounded(other) = Bounds::from(other) {
-            Bounds::from_xy(self.x.clipped_to(other.x), self.y.clipped_to(other.y))
-        } else {
-            Empty
-        }
+        self._clipped_to(other)
     }
 
-    fn expanded_to<U>(&self, other: U) -> Bounds<Rect<T>>
+    fn expanded_to<U>(self, other: U) -> Bounds<Rect<T>>
     where
-        Bounds<Rect<T>>: From<U>,
+        U: AbstractBounds<Rect<T>>,
     {
-        if let Bounded(other) = Bounds::from(other) {
-            Bounds::from_xy(self.x.expanded_to(other.x), self.y.expanded_to(other.y))
-        } else {
-            Bounded(self.clone())
-        }
+        let mut result = self.clone();
+        result._expand_to(other);
+        Bounded(result)
     }
 }
